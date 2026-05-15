@@ -36,6 +36,7 @@ const elements = {
   textQuality: document.querySelector("#textQuality"),
   pdfInput: document.querySelector("#pdfInput"),
   dropZone: document.querySelector("#dropZone"),
+  fileSelectBtn: document.querySelector("#fileSelectBtn"),
   pdfStatus: document.querySelector("#pdfStatus"),
   apiKey: document.querySelector("#apiKey"),
   rememberKey: document.querySelector("#rememberKey"),
@@ -107,13 +108,7 @@ function bindEvents() {
     const file = event.target.files?.[0];
     if (file) processSelectedFile(file);
   });
-  elements.dropZone.addEventListener("click", () => elements.pdfInput.click());
-  elements.dropZone.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      elements.pdfInput.click();
-    }
-  });
+  elements.fileSelectBtn.addEventListener("click", () => elements.pdfInput.click());
   elements.dropZone.addEventListener("dragenter", handleDragEnter);
   elements.dropZone.addEventListener("dragover", handleDragEnter);
   elements.dropZone.addEventListener("dragleave", handleDragLeave);

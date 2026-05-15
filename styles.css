@@ -363,6 +363,7 @@ select:focus {
   background: #f6faff;
   color: var(--soft);
   text-align: center;
+  user-select: text;
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -380,8 +381,22 @@ select:focus {
   display: none;
 }
 
+.file-select-button {
+  margin-top: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(15, 90, 167, 0.28);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.file-select-button:hover {
+  border-color: rgba(15, 90, 167, 0.44);
+  background: #eef6ff;
+}
+
 .drop-zone:hover,
-.drop-zone:focus,
 .drop-zone.is-dragging {
   border-color: rgba(15, 90, 167, 0.72);
   background: #eef6ff;

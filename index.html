@@ -77,10 +77,11 @@
           <textarea id="sourceText" placeholder="Füge hier den zu analysierenden Text ein..." spellcheck="true"></textarea>
         </div>
 
-        <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Datei per Drag and Drop einfügen oder Datei auswählen">
-          <strong>Datei hier ablegen oder auswählen</strong>
+        <div class="drop-zone" id="dropZone" aria-label="Datei per Drag and Drop einfügen">
+          <strong>Datei hier ablegen</strong>
           <span class="format-list">TXT, MD, PDF, DOCX, RTF, HTML, CSV</span>
           <span id="pdfStatus">Keine Datei ausgewählt</span>
+          <button type="button" class="file-select-button" id="fileSelectBtn">Datei auswählen</button>
           <input id="pdfInput" type="file" accept=".txt,.md,.pdf,.docx,.rtf,.html,.csv,application/pdf,text/plain,text/markdown,text/html,text/csv,application/rtf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
         </div>
 
