@@ -686,6 +686,45 @@ select {
   background: #f5f9ff;
 }
 
+#saveKeyBtn,
+#saveLicenseBtn {
+  border-color: rgba(15, 90, 167, 0.28);
+  background: #f3f8ff;
+  color: #0b4f94;
+}
+
+#saveKeyBtn:hover:not(:disabled),
+#saveLicenseBtn:hover:not(:disabled) {
+  border-color: rgba(15, 90, 167, 0.44);
+  background: #e7f2ff;
+}
+
+#connectBtn,
+#testConnectionBtn,
+#verifyLicenseBtn {
+  border-color: rgba(23, 135, 90, 0.25);
+  background: #f1fbf6;
+  color: #106943;
+}
+
+#connectBtn:hover:not(:disabled),
+#testConnectionBtn:hover:not(:disabled),
+#verifyLicenseBtn:hover:not(:disabled) {
+  border-color: rgba(23, 135, 90, 0.42);
+  background: #e3f7ee;
+}
+
+#disconnectBtn {
+  border-color: rgba(201, 54, 68, 0.22);
+  background: #fff5f6;
+  color: #9e2634;
+}
+
+#disconnectBtn:hover:not(:disabled) {
+  border-color: rgba(201, 54, 68, 0.38);
+  background: #ffe9ec;
+}
+
 .api-actions button.is-connected {
   border-color: rgba(23, 135, 90, 0.38);
   background: #17875a;
