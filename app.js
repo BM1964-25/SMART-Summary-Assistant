@@ -334,19 +334,19 @@ async function handleSummarize() {
 
   if (!apiKey) {
     setStatus("API-Key fehlt", "warn");
-    elements.summaryOutput.textContent = "Bitte trage im Einstellungsbereich deinen Anthropic API-Key ein.";
+    setSummaryOutput("Bitte trage im Einstellungsbereich deinen Anthropic API-Key ein.");
     return;
   }
 
   if (!text) {
     setStatus("Fehler bei Verarbeitung", "danger");
-    elements.summaryOutput.textContent = "Bitte füge zuerst einen Text ein oder lade eine PDF-Datei hoch.";
+    setSummaryOutput("Bitte füge zuerst einen Text ein oder lade eine PDF-Datei hoch.");
     return;
   }
 
   if (text.length > MAX_CHARS) {
     setStatus("Fehler bei Verarbeitung", "danger");
-    elements.summaryOutput.textContent = `Der Text ist mit ${text.length.toLocaleString("de-DE")} Zeichen zu groß. Bitte kürze ihn auf maximal ${MAX_CHARS.toLocaleString("de-DE")} Zeichen.`;
+    setSummaryOutput(`Der Text ist mit ${text.length.toLocaleString("de-DE")} Zeichen zu groß. Bitte kürze ihn auf maximal ${MAX_CHARS.toLocaleString("de-DE")} Zeichen.`);
     return;
   }
 
@@ -371,20 +371,25 @@ async function handleSummarize() {
 
     setStatus("Qualität wird geprüft", "warn");
     await shortPause();
-    elements.summaryOutput.textContent = summary;
+    setSummaryOutput(summary);
     setStatus("Ausgabe fertig", "ready");
   } catch (error) {
     handleApiFailure(error);
-    elements.summaryOutput.textContent = [
+    setSummaryOutput([
       "Die Anfrage konnte nicht verarbeitet werden.",
       "",
       error.message,
       "",
       getApiRecoveryHint(error)
-    ].join("\n");
+    ].join("\n"));
   } finally {
     elements.summarizeBtn.disabled = false;
   }
+}
+
+function setSummaryOutput(text, isPlaceholder = false) {
+  elements.summaryOutput.textContent = text;
+  elements.summaryOutput.classList.toggle("is-placeholder", isPlaceholder);
 }
 
 function updateCharacterCount() {
@@ -599,7 +604,7 @@ function resetWorkspace() {
   elements.sourceText.value = "";
   elements.pdfInput.value = "";
   elements.pdfStatus.textContent = "Keine Datei ausgewählt";
-  elements.summaryOutput.textContent = "Noch keine Zusammenfassung erstellt.";
+  setSummaryOutput("Noch keine Zusammenfassung erstellt.", true);
   updateCharacterCount();
   setStatus(apiKeyState.value ? "Bereit" : "API-Key fehlt", apiKeyState.value ? "ready" : "warn");
 }

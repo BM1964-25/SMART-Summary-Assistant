@@ -345,6 +345,12 @@ textarea {
   line-height: 1.56;
 }
 
+textarea::placeholder,
+#summaryOutput.is-placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
 textarea:focus,
 input:focus,
 select:focus {
@@ -355,8 +361,9 @@ select:focus {
 .drop-zone {
   display: grid;
   place-items: center;
-  gap: 4px;
-  min-height: 92px;
+  gap: 6px;
+  min-height: 118px;
+  padding: 18px 14px;
   margin-top: 14px;
   border: 1px dashed rgba(22, 104, 184, 0.34);
   border-radius: var(--radius);
