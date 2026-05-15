@@ -649,9 +649,16 @@ select {
   min-height: 19px;
 }
 
+.api-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
 .api-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
 }
 
@@ -892,6 +899,10 @@ select {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
 
+  .api-action-row {
+    grid-template-columns: 1fr;
+  }
+
   .app-header {
     align-items: stretch;
   }
@@ -929,6 +940,10 @@ select {
   }
 
   .result-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .api-actions {
     grid-template-columns: 1fr;
   }
 
