@@ -193,6 +193,10 @@ h2 {
   padding: 18px;
 }
 
+.input-panel {
+  padding-bottom: 12px;
+}
+
 .input-panel,
 .output-panel {
   display: flex;
