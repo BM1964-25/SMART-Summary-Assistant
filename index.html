@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMART Summary Assistant</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <input type="checkbox" class="help-toggle" id="helpToggle" aria-hidden="true">
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Lokale KI-Arbeitsoberfläche</p>
+        <h1>SMART Summary Assistant</h1>
+        <p class="lead">KI-gestützte Zusammenfassungen für maximale Effizienz: Strukturierte Erkenntnisse aus komplexen Dokumenten und Fachinhalten – schnell, präzise und lokal.</p>
+      </div>
+      <div class="header-actions">
+        <label class="help-button" for="helpToggle" aria-label="Hilfe öffnen">
+          <span aria-hidden="true">?</span>
+        </label>
+        <div class="status-panel" aria-live="polite">
+          <span class="status-dot" id="statusDot"></span>
+          <strong id="statusText">System bereit</strong>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="workflow-panel" aria-label="Arbeitsablauf">
+        <div class="workflow-step">
+          <span class="step-number">1</span>
+          <div>
+            <strong>Zugriff einrichten</strong>
+            <span>API-Key einmalig hinterlegen</span>
+          </div>
+        </div>
+        <span class="workflow-arrow" aria-hidden="true">→</span>
+        <div class="workflow-step">
+          <span class="step-number">2</span>
+          <div>
+            <strong>Quelle erfassen</strong>
+            <span>Text einfügen oder PDF auslesen</span>
+          </div>
+        </div>
+        <span class="workflow-arrow" aria-hidden="true">→</span>
+        <div class="workflow-step">
+          <span class="step-number">3</span>
+          <div>
+            <strong>Zusammenfassung steuern</strong>
+            <span>Länge, Sprache, Fokus und Format wählen</span>
+          </div>
+        </div>
+        <span class="workflow-arrow" aria-hidden="true">→</span>
+        <div class="workflow-step">
+          <span class="step-number">4</span>
+          <div>
+            <strong>Ergebnis nutzen</strong>
+            <span>Kopieren oder exportieren</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel input-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Quelle</h2>
+            <p>Text direkt eingeben oder aus einer Datei übernehmen.</p>
+          </div>
+          <span class="counter" id="charCount">0 Zeichen</span>
+        </div>
+
+        <div class="workspace-resizer">
+          <textarea id="sourceText" placeholder="Füge hier den zu analysierenden Text ein..." spellcheck="true"></textarea>
+        </div>
+
+        <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Datei per Drag and Drop einfügen oder Datei auswählen">
+          <strong>Datei hier ablegen oder auswählen</strong>
+          <span class="format-list">TXT, MD, PDF, DOCX, RTF, HTML, CSV</span>
+          <span id="pdfStatus">Keine Datei ausgewählt</span>
+          <input id="pdfInput" type="file" accept=".txt,.md,.pdf,.docx,.rtf,.html,.csv,application/pdf,text/plain,text/markdown,text/html,text/csv,application/rtf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+        </div>
+
+        <p class="file-help-inline">Details zu Formaten, Grenzen und Datenschutz findest du in der <label for="helpToggle" class="help-link">Hilfe</label>.</p>
+      </section>
+
+      <aside class="panel settings-panel">
+        <div class="panel-heading compact">
+          <div>
+            <h2>Zusammenfassung</h2>
+            <p>Länge, Sprache, Fokus und Ausgabeform steuern.</p>
+          </div>
+        </div>
+
+        <div class="grid-fields">
+          <div class="field">
+            <label for="lengthSelect">Länge</label>
+            <select id="lengthSelect">
+              <option value="short">Kurz: 2 bis 3 Sätze</option>
+              <option value="medium" selected>Mittel: kompakter Absatz</option>
+              <option value="detailed">Detailliert: strukturierte Stichpunkte</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="languageSelect">Sprache</label>
+            <select id="languageSelect">
+              <option>Deutsch</option>
+              <option>Englisch</option>
+              <option>Französisch</option>
+              <option>Spanisch</option>
+              <option>Italienisch</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="focusSelect">Fokus</label>
+            <select id="focusSelect">
+              <option>Allgemein</option>
+              <option>Kernaussagen</option>
+              <option>Fakten und Zahlen</option>
+              <option>Handlungsempfehlungen</option>
+              <option>Pro und Contra</option>
+              <option>Risiken</option>
+              <option>Chancen</option>
+              <option>Offene Fragen</option>
+              <option>Aufgaben und To-dos</option>
+              <option>Kritische Punkte</option>
+              <option>Management Summary</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="formatSelect">Ausgabeformat</label>
+            <select id="formatSelect">
+              <option>Fließtext</option>
+              <option>Stichpunkte</option>
+              <option>Tabelle</option>
+              <option>Executive Summary</option>
+              <option>Entscheidungsnotiz</option>
+            </select>
+          </div>
+
+          <div class="field action-field">
+            <span class="field-spacer" aria-hidden="true"></span>
+            <button type="button" class="primary-action" id="summarizeBtn">Zusammenfassung erstellen</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel output-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Ergebnis</h2>
+            <p>Die Zusammenfassung wird nach deinen gewählten Einstellungen erstellt.</p>
+          </div>
+        </div>
+        <div class="workspace-resizer">
+          <pre id="summaryOutput">Noch keine Zusammenfassung erstellt.</pre>
+        </div>
+        <div class="toolbar result-actions">
+          <button type="button" id="copyBtn">Kopieren</button>
+          <button type="button" id="exportMdBtn">Als Markdown speichern</button>
+          <button type="button" id="exportTxtBtn">Als Text speichern</button>
+          <button type="button" id="resetBtn">Zurücksetzen</button>
+        </div>
+      </section>
+
+      <section class="panel api-panel">
+        <div class="panel-heading compact">
+          <div>
+            <h2>Zugriff & Datenschutz</h2>
+            <p>Anthropic-Verbindung und Verarbeitungshinweise.</p>
+          </div>
+        </div>
+
+        <details class="api-key-card" aria-labelledby="apiKeyTitle">
+          <summary class="api-key-toggle" id="apiKeyToggle">
+            <div>
+              <h3 id="apiKeyTitle">API-Key verwalten</h3>
+              <p>Schlüssel lokal verwalten und Verbindung testen.</p>
+            </div>
+            <span class="api-key-summary">
+              <span class="connection-badge" id="connectionBadge">Nicht verbunden</span>
+              <span class="chevron" aria-hidden="true">▾</span>
+            </span>
+          </summary>
+
+          <div class="api-key-details" id="apiKeyDetails">
+            <div class="field api-field">
+              <label for="apiKey">API-Schlüssel</label>
+              <div class="secret-row">
+                <input id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-...">
+                <button type="button" class="icon-button eye-button" id="toggleKey" aria-label="API-Key anzeigen" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.2 12s3.6-6.5 9.8-6.5S21.8 12 21.8 12 18.2 18.5 12 18.5 2.2 12 2.2 12Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              <p class="field-help" id="keyHint">Der Key wird verborgen angezeigt. Zum Bearbeiten Feld aktivieren oder das Auge nutzen.</p>
+            </div>
+
+            <label class="check-row">
+              <input id="rememberKey" type="checkbox">
+              <span>API-Key lokal im Browser speichern</span>
+            </label>
+
+            <div class="api-actions">
+              <button type="button" id="saveKeyBtn">Speichern</button>
+              <button type="button" id="connectBtn">Verbindung</button>
+              <button type="button" id="testConnectionBtn">Verbindung überprüfen</button>
+              <button type="button" id="disconnectBtn">Verbindung trennen</button>
+            </div>
+
+            <div class="key-feedback" id="keyFeedback" role="status" aria-live="polite">Noch kein API-Key gespeichert.</div>
+
+            <div class="privacy-note">
+              <strong>Datenschutz-Hinweis</strong>
+              <p>Der API-Key wird nur lokal in diesem Browser gespeichert, sofern du die Speicherung aktivierst. Inhalte werden zur Zusammenfassung über den lokalen Proxy an Anthropic übertragen. Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer du übermittelst Inhalte ausdrücklich als Feedback oder stimmst einer Nutzung zur Modellverbesserung zu. Verarbeite vertrauliche oder personenbezogene Daten nur, wenn dies fachlich und rechtlich zulässig ist.</p>
+            </div>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="helpModal">
+    <section class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="help-header">
+        <div>
+          <p class="eyebrow">Hilfe</p>
+          <h2 id="helpTitle">Wichtige Hinweise</h2>
+        </div>
+        <label class="modal-close" for="helpToggle" aria-label="Hilfe schließen">×</label>
+      </div>
+
+      <div class="help-grid">
+        <article>
+          <h3>Dateiformate</h3>
+          <p>Unterstützt: TXT, MD, PDF, DOCX, RTF, HTML, CSV. Es wird nur Text extrahiert, nicht das Original-Layout.</p>
+        </article>
+        <article>
+          <h3>PDF und Office</h3>
+          <p>PDF funktioniert bei markierbarem Text. Gescannte PDFs, Bilder und Screenshots benötigen OCR. Google Docs und Apple Pages bitte als DOCX, PDF oder TXT exportieren.</p>
+        </article>
+        <article>
+          <h3>Textmenge</h3>
+          <p>Empfohlen sind bis ca. 100.000 Zeichen. Maximal verarbeitet die App 180.000 Zeichen; sehr große Texte können Qualität und Laufzeit beeinflussen.</p>
+        </article>
+        <article>
+          <h3>Datenschutz</h3>
+          <p>Inhalte werden zur Verarbeitung über den lokalen Proxy an Anthropic gesendet. API-Eingaben und -Ausgaben werden laut Anthropic nicht zum Training generativer Modelle verwendet, außer bei Feedback oder Opt-in.</p>
+        </article>
+        <article>
+          <h3>API-Key</h3>
+          <p>Der API-Key wird nur lokal im Browser gespeichert, wenn du die Speicherung aktivierst. Ohne gültigen Key wird keine KI-Anfrage gesendet.</p>
+        </article>
+        <article>
+          <h3>Ergebnisqualität</h3>
+          <p>Die Qualität hängt von Lesbarkeit, Struktur, Länge und Textqualität der Quelle ab. Saubere Überschriften, klare Absätze und kopierbarer Text verbessern die Ergebnisse.</p>
+        </article>
+        <article>
+          <h3>Ergebnis-Aktionen</h3>
+          <p>Kopieren legt die Zusammenfassung in die Zwischenablage. Markdown speichert eine strukturierte MD-Datei. Text speichert eine einfache TXT-Datei. Zurücksetzen leert Quelle, Ergebnis und Dateistatus; der API-Key bleibt erhalten.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
