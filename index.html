@@ -195,11 +195,13 @@
               <input id="licenseKey" type="text" autocomplete="off" placeholder="SMART-XXXX-XXXX-XXXX">
               <p class="field-help">Nach dem Kauf über Stripe wird dieser Schlüssel hier hinterlegt. Produktiv erfolgt die Prüfung über eine Lizenz-API.</p>
             </div>
-            <div class="api-actions">
-              <button type="button" id="saveLicenseBtn">Lizenz speichern</button>
-              <button type="button" id="verifyLicenseBtn">Lizenz prüfen</button>
+            <div class="api-action-row license-action-row">
+              <div class="api-actions license-actions">
+                <button type="button" id="saveLicenseBtn">Lizenz speichern</button>
+                <button type="button" id="verifyLicenseBtn">Lizenz prüfen</button>
+              </div>
+              <div class="key-feedback" id="licenseFeedback" role="status" aria-live="polite">Noch keine Lizenz gespeichert.</div>
             </div>
-            <div class="key-feedback" id="licenseFeedback" role="status" aria-live="polite">Noch keine Lizenz gespeichert.</div>
           </div>
         </details>
 
