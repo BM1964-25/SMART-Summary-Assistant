@@ -839,6 +839,41 @@ select {
   width: 100%;
 }
 
+#copyBtn {
+  border-color: rgba(15, 90, 167, 0.3);
+  background: #0f5aa7;
+  color: #ffffff;
+}
+
+#copyBtn:hover:not(:disabled) {
+  border-color: rgba(15, 90, 167, 0.45);
+  background: #0b4f94;
+}
+
+#exportTxtBtn,
+#exportMdBtn {
+  border-color: rgba(15, 90, 167, 0.22);
+  background: #f4f8fd;
+  color: #18324f;
+}
+
+#exportTxtBtn:hover:not(:disabled),
+#exportMdBtn:hover:not(:disabled) {
+  border-color: rgba(15, 90, 167, 0.36);
+  background: #eaf3ff;
+}
+
+#resetBtn {
+  border-color: rgba(201, 54, 68, 0.2);
+  background: #fff7f8;
+  color: #9e2634;
+}
+
+#resetBtn:hover:not(:disabled) {
+  border-color: rgba(201, 54, 68, 0.36);
+  background: #ffebee;
+}
+
 #summaryOutput {
   flex: 1;
   min-height: 100%;
