@@ -7,29 +7,110 @@ export function buildPrompts({ text, length, language, focus, format }) {
     detailed: "Detailliert: strukturierte Stichpunkte mit klaren Unterpunkten, sofern sinnvoll."
   };
 
-  const systemPrompt = [
-    "Du bist ein professioneller Analyse- und Zusammenfassungsassistent für Business-Nutzer.",
+  const focusMap = {
+    Allgemein: "Erstelle eine ausgewogene Gesamtsicht mit Zweck, Kontext, wichtigsten Inhalten und relevanten Schlussfolgerungen.",
+    Kernaussagen: "Priorisiere die zentralen Aussagen, Hauptargumente und wirklich entscheidenden Botschaften. Lasse Nebenaspekte weg.",
+    "Fakten und Zahlen": "Priorisiere belegte Fakten, Kennzahlen, Datumsangaben, Namen, Mengen, Quellenbezüge und Einschränkungen. Keine Zahl ohne Kontext wiedergeben.",
+    Handlungsempfehlungen: "Leite nur Empfehlungen ab, die klar aus dem Inhalt begründbar sind. Trenne Empfehlung, Begründung und Voraussetzung.",
+    "Pro und Contra": "Stelle Vorteile und Nachteile balanciert gegenüber. Benenne, wenn eine Seite im Ausgangstext schwächer belegt ist.",
+    Risiken: "Priorisiere Risiken, Unsicherheiten, Abhängigkeiten, Annahmen, blinde Flecken und mögliche negative Folgen.",
+    Chancen: "Priorisiere Potenziale, Nutzen, positive Effekte, Hebel, Wachstumsfelder und Bedingungen für Realisierung.",
+    "Offene Fragen": "Identifiziere ungeklärte Punkte, fehlende Informationen, notwendige Entscheidungen und sinnvolle Rückfragen.",
+    "Aufgaben und To-dos": "Extrahiere konkrete Aufgaben mit Ziel, möglichem Verantwortungsbereich, Abhängigkeiten und nächstem Schritt, soweit im Text belegbar.",
+    "Kritische Punkte": "Hebe problematische Aussagen, Widersprüche, Schwachstellen, Annahmen, Risiken und Punkte mit Entscheidungsbedarf hervor.",
+    "Management Summary": "Formuliere entscheidungsorientiert für Führungskräfte: Kontext, Bedeutung, Kernaussage, Auswirkungen und nächste Entscheidung."
+  };
+
+  const formatMap = {
+    Fließtext: [
+      "Gib einen klaren, professionellen Fließtext aus.",
+      "Nutze kurze Absätze, wenn es die Lesbarkeit verbessert.",
+      "Keine unnötigen Überschriften, sofern die gewählte Länge kurz oder mittel ist."
+    ],
+    Stichpunkte: [
+      "Nutze prägnante Stichpunkte mit paralleler Satzstruktur.",
+      "Beginne jeden Stichpunkt mit der wichtigsten Information.",
+      "Gruppiere bei detaillierter Länge unter knappen Zwischenüberschriften."
+    ],
+    Tabelle: [
+      "Erstelle eine sauber lesbare Markdown-Tabelle.",
+      "Wähle aussagekräftige Spalten passend zum Fokus, z. B. Thema, Aussage, Evidenz, Relevanz, Risiko, nächster Schritt.",
+      "Halte Zellen kurz und vermeide lange Fließtexte innerhalb der Tabelle."
+    ],
+    "Executive Summary": [
+      "Strukturiere als Executive Summary für Entscheider.",
+      "Empfohlene Struktur: Ausgangslage, wichtigste Erkenntnis, Auswirkungen, Risiken/Abhängigkeiten, nächster Schritt.",
+      "Formuliere knapp, souverän und ohne Fachjargon, sofern der Ausgangstext ihn nicht erfordert."
+    ],
+    Entscheidungsnotiz: [
+      "Strukturiere als Entscheidungsnotiz.",
+      "Empfohlene Struktur: Entscheidungspunkt, Kurzbewertung, Optionen, Empfehlung, Begründung, Risiken, offene Punkte.",
+      "Kennzeichne klar, wenn aus dem Text keine belastbare Empfehlung ableitbar ist."
+    ]
+  };
+
+  const languageStyleMap = {
+    Deutsch: "Verwende professionelles, klares Business-Deutsch.",
+    Englisch: "Use clear, professional business English.",
+    Französisch: "Utilise un français professionnel, clair et précis.",
+    Spanisch: "Utiliza un español profesional, claro y preciso.",
+    Italienisch: "Usa un italiano professionale, chiaro e preciso."
+  };
+
+  const resolvedLength = lengthMap[length] || lengthMap.medium;
+  const resolvedFocus = focusMap[focus] || focusMap.Allgemein;
+  const resolvedFormatRules = formatMap[format] || formatMap.Fließtext;
+  const resolvedLanguageStyle = languageStyleMap[language] || `Halte die Ausgabesprache strikt ein: ${language}.`;
+
+  const qualityRules = [
+    "Arbeite wie ein Senior Business Analyst: präzise, entscheidungsorientiert, nüchtern und gut strukturiert.",
     "Fasse ausschließlich den bereitgestellten Inhalt zusammen.",
     "Ergänze keine unbelegten Aussagen und erfinde keine Fakten.",
-    "Übernimm Zahlen, Fakten, Namen, Einschränkungen und Unsicherheiten korrekt.",
-    "Mache Widersprüche, fehlende Angaben oder Unklarheiten kenntlich, wenn sie für das Verständnis relevant sind.",
-    `Halte die Ausgabesprache strikt ein: ${language}.`,
-    `Halte die gewünschte Länge strikt ein: ${lengthMap[length]}.`,
-    `Berücksichtige konsequent diesen Fokus: ${focus}.`,
-    `Nutze exakt dieses Ausgabeformat: ${format}.`
+    "Trenne belegte Aussagen von Interpretation, Empfehlung oder Unsicherheit.",
+    "Übernimm Zahlen, Fakten, Namen, Datumsangaben, Einschränkungen und Unsicherheiten korrekt.",
+    "Mache Widersprüche, fehlende Angaben oder Unklarheiten kenntlich, wenn sie für das Verständnis oder Entscheidungen relevant sind.",
+    "Verdichte konsequent: keine Wiederholungen, keine Füllsätze, keine allgemeinen KI-Floskeln.",
+    "Wenn Informationen fehlen, benenne die Lücke knapp statt zu spekulieren."
+  ];
+
+  const finalReviewRules = [
+    "Prüfe vor der finalen Ausgabe intern, ob Sprache, Länge, Fokus und Format eingehalten sind.",
+    "Prüfe intern, ob alle Zahlen und Fakten aus dem Inhalt korrekt übernommen wurden.",
+    "Prüfe intern, ob keine nicht belegten Aussagen hinzugefügt wurden.",
+    "Gib nur die finale Zusammenfassung aus, keine Erläuterung deiner Prüfung."
+  ];
+
+  const systemPrompt = [
+    ...qualityRules,
+    resolvedLanguageStyle,
+    `Zielsprache: ${language}.`,
+    `Gewünschte Länge: ${resolvedLength}`,
+    `Fokus: ${focus}. ${resolvedFocus}`,
+    `Ausgabeformat: ${format}.`,
+    "Formatregeln:",
+    ...resolvedFormatRules.map((rule) => `- ${rule}`),
+    "Interne Endprüfung:",
+    ...finalReviewRules.map((rule) => `- ${rule}`)
   ].join("\n");
 
   const userPrompt = [
-    "Analysiere und fasse den folgenden Inhalt zusammen.",
+    "Analysiere den folgenden Inhalt und erstelle daraus eine hochwertige professionelle Zusammenfassung.",
     "",
-    "Anforderungen:",
+    "Verbindliche Ausgabeparameter:",
     `- Sprache: ${language}`,
-    `- Länge: ${lengthMap[length]}`,
-    `- Fokus: ${focus}`,
+    `- Länge: ${resolvedLength}`,
+    `- Fokus: ${focus} (${resolvedFocus})`,
     `- Ausgabeformat: ${format}`,
+    "",
+    "Formatregeln:",
+    ...resolvedFormatRules.map((rule) => `- ${rule}`),
+    "",
+    "Qualitätsstandard:",
     "- Keine unbelegten Ergänzungen.",
-    "- Fakten, Zahlen und Einschränkungen präzise übernehmen.",
-    "- Bei Tabellenformat eine sauber lesbare Markdown-Tabelle verwenden.",
+    "- Fakten, Zahlen, Namen, Datumsangaben und Einschränkungen präzise übernehmen.",
+    "- Relevanz vor Vollständigkeit: Wichtiges priorisieren, Nebensächliches verdichten.",
+    "- Widersprüche, Unklarheiten und fehlende Angaben kenntlich machen, wenn relevant.",
+    "- Keine Einleitung wie 'Hier ist die Zusammenfassung'. Direkt mit der Ausgabe beginnen.",
     "",
     "Inhalt:",
     text

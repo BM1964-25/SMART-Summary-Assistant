@@ -30,6 +30,8 @@ const licenseState = {
   isBusy: false
 };
 
+let currentSummaryText = "Noch keine Zusammenfassung erstellt.";
+
 const elements = {
   sourceText: document.querySelector("#sourceText"),
   charCount: document.querySelector("#charCount"),
@@ -388,8 +390,110 @@ async function handleSummarize() {
 }
 
 function setSummaryOutput(text, isPlaceholder = false) {
-  elements.summaryOutput.textContent = text;
+  currentSummaryText = text;
+  if (isPlaceholder) {
+    elements.summaryOutput.textContent = text;
+  } else {
+    elements.summaryOutput.innerHTML = renderStructuredOutput(text);
+  }
   elements.summaryOutput.classList.toggle("is-placeholder", isPlaceholder);
+}
+
+function renderStructuredOutput(markdownText) {
+  const lines = markdownText.split(/\r?\n/);
+  const blocks = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trim();
+
+    if (!line) continue;
+
+    if (isMarkdownTableStart(lines, index)) {
+      const tableLines = [];
+      while (index < lines.length && lines[index].trim().includes("|")) {
+        tableLines.push(lines[index].trim());
+        index += 1;
+      }
+      index -= 1;
+      blocks.push(renderTable(tableLines));
+      continue;
+    }
+
+    if (/^#{1,4}\s+/.test(line)) {
+      const level = Math.min(line.match(/^#+/)?.[0].length || 3, 4);
+      blocks.push(`<h${level}>${escapeHtml(line.replace(/^#{1,4}\s+/, ""))}</h${level}>`);
+      continue;
+    }
+
+    if (/^[-*]\s+/.test(line)) {
+      const items = [];
+      while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
+        items.push(`<li>${escapeHtml(lines[index].trim().replace(/^[-*]\s+/, ""))}</li>`);
+        index += 1;
+      }
+      index -= 1;
+      blocks.push(`<ul>${items.join("")}</ul>`);
+      continue;
+    }
+
+    if (/^\d+\.\s+/.test(line)) {
+      const items = [];
+      while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
+        items.push(`<li>${escapeHtml(lines[index].trim().replace(/^\d+\.\s+/, ""))}</li>`);
+        index += 1;
+      }
+      index -= 1;
+      blocks.push(`<ol>${items.join("")}</ol>`);
+      continue;
+    }
+
+    const paragraphLines = [line];
+    while (
+      index + 1 < lines.length &&
+      lines[index + 1].trim() &&
+      !/^#{1,4}\s+/.test(lines[index + 1].trim()) &&
+      !/^[-*]\s+/.test(lines[index + 1].trim()) &&
+      !/^\d+\.\s+/.test(lines[index + 1].trim()) &&
+      !isMarkdownTableStart(lines, index + 1)
+    ) {
+      paragraphLines.push(lines[index + 1].trim());
+      index += 1;
+    }
+    blocks.push(`<p>${escapeHtml(paragraphLines.join(" "))}</p>`);
+  }
+
+  return blocks.join("");
+}
+
+function isMarkdownTableStart(lines, index) {
+  const current = lines[index]?.trim() || "";
+  const next = lines[index + 1]?.trim() || "";
+  return current.includes("|") && /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(next);
+}
+
+function renderTable(tableLines) {
+  const rows = tableLines
+    .filter((line) => !/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line))
+    .map((line) => line.replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim()));
+
+  if (!rows.length) return "";
+
+  const [header, ...bodyRows] = rows;
+  const headerHtml = header.map((cell) => `<th>${escapeHtml(cell)}</th>`).join("");
+  const bodyHtml = bodyRows
+    .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`)
+    .join("");
+
+  return `<div class="summary-table-wrap"><table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
+}
+
+function escapeHtml(value) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function updateCharacterCount() {
@@ -580,7 +684,7 @@ function setKeyFeedback(message, type) {
 }
 
 async function copySummary() {
-  const summary = elements.summaryOutput.textContent.trim();
+  const summary = currentSummaryText.trim();
   if (!summary || summary === "Noch keine Zusammenfassung erstellt.") return;
 
   await navigator.clipboard.writeText(summary);
@@ -588,7 +692,7 @@ async function copySummary() {
 }
 
 function exportSummary(extension) {
-  const summary = elements.summaryOutput.textContent.trim();
+  const summary = currentSummaryText.trim();
   if (!summary || summary === "Noch keine Zusammenfassung erstellt.") return;
 
   const mime = extension === "md" ? "text/markdown" : "text/plain";
