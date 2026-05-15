@@ -300,6 +300,10 @@ h2 {
   line-height: 1.45;
 }
 
+.source-heading-copy {
+  white-space: nowrap;
+}
+
 .compact {
   margin-bottom: 18px;
 }
@@ -1010,6 +1014,10 @@ select {
 
   .panel-heading {
     display: grid;
+  }
+
+  .source-heading-copy {
+    white-space: normal;
   }
 
   .workspace-resizer {
