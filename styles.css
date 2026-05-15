@@ -310,7 +310,8 @@ h2 {
 .workspace-resizer {
   width: 100%;
   resize: vertical;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: 380px;
   height: 520px;
   display: flex;
@@ -430,10 +431,48 @@ select:focus {
   display: grid;
   gap: 10px;
   padding: 12px;
-  margin-bottom: 0;
+  margin-bottom: 10px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: linear-gradient(180deg, #ffffff, #f6f9fd);
+}
+
+.api-panel .api-key-card:last-child {
+  margin-bottom: 0;
+}
+
+.source-metrics {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.counter.warn,
+.quality-badge.warn {
+  color: #9a650d;
+}
+
+.counter.danger,
+.quality-badge.danger {
+  color: var(--danger);
+}
+
+.quality-badge {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.quality-badge.success {
+  border-color: rgba(23, 135, 90, 0.22);
+  background: #e8f8f1;
+  color: #106943;
 }
 
 .api-key-toggle {
@@ -749,7 +788,8 @@ select {
 #summaryOutput {
   flex: 1;
   min-height: 100%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   margin: 0;
   padding: 18px;
   border: 1px solid var(--line);

@@ -1,7 +1,17 @@
 import { requestClaudeSummary, testClaudeConnection } from "./anthropicClient.js";
 import { extractTextFromPdf } from "./pdfExtractor.js";
+import { extractTextFromDocx } from "./docxExtractor.js";
+import {
+  clearLicenseSession,
+  loadStoredLicense,
+  normalizeLicenseKey,
+  saveLicenseKey,
+  setLicenseSessionActive,
+  verifyLicenseKey
+} from "./licenseClient.js";
 
 const MAX_CHARS = 180000;
+const RECOMMENDED_CHARS = 100000;
 const STORAGE_KEY = "smart-summary-anthropic-key";
 const SESSION_KEY = "smart-summary-session-active";
 const DEFAULT_PROXY_URL = "/api/anthropic/messages";
@@ -14,9 +24,16 @@ const apiKeyState = {
   isBusy: false
 };
 
+const licenseState = {
+  key: "",
+  active: false,
+  isBusy: false
+};
+
 const elements = {
   sourceText: document.querySelector("#sourceText"),
   charCount: document.querySelector("#charCount"),
+  textQuality: document.querySelector("#textQuality"),
   pdfInput: document.querySelector("#pdfInput"),
   dropZone: document.querySelector("#dropZone"),
   pdfStatus: document.querySelector("#pdfStatus"),
@@ -32,6 +49,11 @@ const elements = {
   connectBtn: document.querySelector("#connectBtn"),
   testConnectionBtn: document.querySelector("#testConnectionBtn"),
   disconnectBtn: document.querySelector("#disconnectBtn"),
+  licenseKey: document.querySelector("#licenseKey"),
+  saveLicenseBtn: document.querySelector("#saveLicenseBtn"),
+  verifyLicenseBtn: document.querySelector("#verifyLicenseBtn"),
+  licenseBadge: document.querySelector("#licenseBadge"),
+  licenseFeedback: document.querySelector("#licenseFeedback"),
   lengthSelect: document.querySelector("#lengthSelect"),
   languageSelect: document.querySelector("#languageSelect"),
   focusSelect: document.querySelector("#focusSelect"),
@@ -50,6 +72,9 @@ init();
 
 function init() {
   const savedKey = localStorage.getItem(STORAGE_KEY);
+  const savedLicense = loadStoredLicense();
+  licenseState.key = savedLicense.key;
+  licenseState.active = savedLicense.active;
 
   const hasSavedKey = Boolean(savedKey && isPlausibleApiKey(savedKey));
 
@@ -65,6 +90,7 @@ function init() {
   updateCharacterCount();
   bindEvents();
   renderApiKeyComponent();
+  renderLicenseComponent();
   setApiKeyPanelOpen(false);
   setKeyFeedback(hasSavedKey ? "Gespeicherter API-Key geladen." : "Noch kein gültiger API-Key gespeichert.", hasSavedKey ? "success" : "info");
   setStatus(hasSavedKey ? "Bereit" : "API-Key fehlt", hasSavedKey ? "ready" : "warn");
@@ -101,6 +127,13 @@ function bindEvents() {
   elements.connectBtn.addEventListener("click", handleConnect);
   elements.testConnectionBtn.addEventListener("click", handleConnectionTest);
   elements.disconnectBtn.addEventListener("click", handleDisconnect);
+  elements.saveLicenseBtn.addEventListener("click", handleSaveLicense);
+  elements.verifyLicenseBtn.addEventListener("click", handleVerifyLicense);
+  elements.licenseKey.addEventListener("input", () => {
+    licenseState.active = false;
+    clearLicenseSession();
+    renderLicenseComponent();
+  });
 
   elements.toggleKey.addEventListener("click", () => {
     apiKeyState.isVisible = !apiKeyState.isVisible;
@@ -131,6 +164,39 @@ function bindEvents() {
     persistSettings();
     setKeyFeedback(elements.rememberKey.checked ? "Lokale Speicherung aktiviert." : "Lokale Speicherung deaktiviert.", "info");
   });
+}
+
+function handleSaveLicense() {
+  const key = normalizeLicenseKey(elements.licenseKey.value);
+  licenseState.key = key;
+  licenseState.active = false;
+  clearLicenseSession();
+  saveLicenseKey(key);
+  setLicenseFeedback(key ? "Lizenzschlüssel gespeichert. Bitte Lizenz prüfen." : "Bitte Lizenzschlüssel eingeben.", key ? "info" : "error");
+  renderLicenseComponent();
+}
+
+async function handleVerifyLicense() {
+  const key = normalizeLicenseKey(elements.licenseKey.value || licenseState.key);
+  licenseState.isBusy = true;
+  renderLicenseComponent();
+  setLicenseFeedback("Lizenz wird geprüft...", "loading");
+
+  try {
+    const result = await verifyLicenseKey(key);
+    licenseState.key = result.licenseKey;
+    licenseState.active = true;
+    saveLicenseKey(result.licenseKey);
+    setLicenseSessionActive();
+    setLicenseFeedback(`Lizenz aktiv (${result.plan}).`, "success");
+  } catch (error) {
+    licenseState.active = false;
+    clearLicenseSession();
+    setLicenseFeedback(error.message, "error");
+  } finally {
+    licenseState.isBusy = false;
+    renderLicenseComponent();
+  }
 }
 
 function handleSaveKey() {
@@ -261,7 +327,7 @@ async function extractTextFromFile(file) {
   }
 
   if (extension === "docx") {
-    throw new Error("DOCX ist als Format vorgesehen, die Textextraktion wird in der MVP-Version noch ergänzt.");
+    return extractTextFromDocx(file);
   }
 
   throw new Error("Dieses Dateiformat wird noch nicht unterstützt.");
@@ -329,6 +395,38 @@ async function handleSummarize() {
 function updateCharacterCount() {
   const count = elements.sourceText.value.length;
   elements.charCount.textContent = `${count.toLocaleString("de-DE")} Zeichen`;
+  elements.charCount.classList.toggle("warn", count > RECOMMENDED_CHARS && count <= MAX_CHARS);
+  elements.charCount.classList.toggle("danger", count > MAX_CHARS);
+  updateTextQuality(count);
+}
+
+function updateTextQuality(count = elements.sourceText.value.length) {
+  if (!count) {
+    elements.textQuality.textContent = "Textqualität: noch keine Quelle";
+    elements.textQuality.className = "quality-badge";
+    return;
+  }
+
+  if (count > MAX_CHARS) {
+    elements.textQuality.textContent = "Textqualität: Text zu groß";
+    elements.textQuality.className = "quality-badge danger";
+    return;
+  }
+
+  if (count > RECOMMENDED_CHARS) {
+    elements.textQuality.textContent = "Textqualität: lang, ggf. kürzen";
+    elements.textQuality.className = "quality-badge warn";
+    return;
+  }
+
+  if (count < 300) {
+    elements.textQuality.textContent = "Textqualität: sehr kurz";
+    elements.textQuality.className = "quality-badge warn";
+    return;
+  }
+
+  elements.textQuality.textContent = "Textqualität: gut";
+  elements.textQuality.className = "quality-badge success";
 }
 
 function setStatus(label, type) {
@@ -370,6 +468,23 @@ function renderApiKeyComponent(options = {}) {
   elements.connectBtn.disabled = apiKeyState.isBusy || !apiKeyState.value;
   elements.testConnectionBtn.disabled = apiKeyState.isBusy || !apiKeyState.value;
   elements.disconnectBtn.disabled = apiKeyState.isBusy || !apiKeyState.isConnected;
+}
+
+function renderLicenseComponent() {
+  if (licenseState.key && elements.licenseKey.value !== licenseState.key) {
+    elements.licenseKey.value = licenseState.key;
+  }
+
+  elements.licenseBadge.textContent = licenseState.active ? "Lizenz aktiv" : "Nicht aktiviert";
+  elements.licenseBadge.classList.toggle("is-connected", licenseState.active);
+  elements.saveLicenseBtn.disabled = licenseState.isBusy;
+  elements.verifyLicenseBtn.disabled = licenseState.isBusy || !elements.licenseKey.value.trim();
+}
+
+function setLicenseFeedback(message, type) {
+  elements.licenseFeedback.textContent = message;
+  elements.licenseFeedback.classList.remove("success", "error", "loading", "info");
+  elements.licenseFeedback.classList.add(type);
 }
 
 function maskApiKey(key) {

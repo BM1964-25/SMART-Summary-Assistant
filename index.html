@@ -67,7 +67,10 @@
             <h2>Quelle</h2>
             <p>Text direkt eingeben oder aus einer Datei übernehmen.</p>
           </div>
-          <span class="counter" id="charCount">0 Zeichen</span>
+          <div class="source-metrics">
+            <span class="counter" id="charCount">0 Zeichen</span>
+            <span class="quality-badge" id="textQuality">Textqualität: noch keine Quelle</span>
+          </div>
         </div>
 
         <div class="workspace-resizer">
@@ -169,10 +172,36 @@
       <section class="panel api-panel">
         <div class="panel-heading compact">
           <div>
-            <h2>Zugriff & Datenschutz</h2>
-            <p>Anthropic-Verbindung und Verarbeitungshinweise.</p>
+            <h2>Zugriff, Lizenz & Datenschutz</h2>
+            <p>Lizenz, Anthropic-Verbindung und Verarbeitungshinweise.</p>
           </div>
         </div>
+
+        <details class="api-key-card license-card" aria-labelledby="licenseTitle">
+          <summary class="api-key-toggle">
+            <div>
+              <h3 id="licenseTitle">Lizenz verwalten</h3>
+              <p>Lizenzschlüssel speichern und prüfen.</p>
+            </div>
+            <span class="api-key-summary">
+              <span class="connection-badge" id="licenseBadge">Nicht aktiviert</span>
+              <span class="chevron" aria-hidden="true">▾</span>
+            </span>
+          </summary>
+
+          <div class="api-key-details">
+            <div class="field api-field">
+              <label for="licenseKey">Lizenzschlüssel</label>
+              <input id="licenseKey" type="text" autocomplete="off" placeholder="SMART-XXXX-XXXX-XXXX">
+              <p class="field-help">Nach dem Kauf über Stripe wird dieser Schlüssel hier hinterlegt. Produktiv erfolgt die Prüfung über eine Lizenz-API.</p>
+            </div>
+            <div class="api-actions">
+              <button type="button" id="saveLicenseBtn">Lizenz speichern</button>
+              <button type="button" id="verifyLicenseBtn">Lizenz prüfen</button>
+            </div>
+            <div class="key-feedback" id="licenseFeedback" role="status" aria-live="polite">Noch keine Lizenz gespeichert.</div>
+          </div>
+        </details>
 
         <details class="api-key-card" aria-labelledby="apiKeyTitle">
           <summary class="api-key-toggle" id="apiKeyToggle">
@@ -238,7 +267,7 @@
       <div class="help-grid">
         <article>
           <h3>Dateiformate</h3>
-          <p>Unterstützt: TXT, MD, PDF, DOCX, RTF, HTML, CSV. Es wird nur Text extrahiert, nicht das Original-Layout.</p>
+          <p>Unterstützt: TXT, MD, PDF, DOCX, RTF, HTML, CSV. Es wird nur Text extrahiert, nicht das Original-Layout. DOCX nutzt einen Browser-Parser und benötigt beim ersten Laden Internetzugriff.</p>
         </article>
         <article>
           <h3>PDF und Office</h3>
@@ -255,6 +284,14 @@
         <article>
           <h3>API-Key</h3>
           <p>Der API-Key wird nur lokal im Browser gespeichert, wenn du die Speicherung aktivierst. Ohne gültigen Key wird keine KI-Anfrage gesendet.</p>
+        </article>
+        <article>
+          <h3>Lizenz</h3>
+          <p>Für den Verkauf über Stripe erhält der Nutzer einen Lizenzschlüssel. In der lokalen Demo kann SMART-DEMO-2026-LOCAL geprüft werden; produktiv sollte eine kleine Lizenz-API Stripe-Käufe und Lizenzstatus bestätigen.</p>
+        </article>
+        <article>
+          <h3>Windows und Mac</h3>
+          <p>Die App läuft im Browser auf Windows und macOS. Für KI-Anfragen muss der lokale Proxy per npm start laufen; eine reine GitHub-Pages-Version kann keinen Proxy ausführen.</p>
         </article>
         <article>
           <h3>Ergebnisqualität</h3>
