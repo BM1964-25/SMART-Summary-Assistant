@@ -909,6 +909,7 @@ select {
   border-radius: var(--radius);
   background: #fbfdff;
   color: var(--text);
+  font-family: inherit;
   font-size: 0.96rem;
   white-space: pre-wrap;
   line-height: 1.56;
