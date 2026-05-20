@@ -21,7 +21,8 @@ const apiKeyState = {
   value: "",
   isVisible: false,
   isConnected: false,
-  isBusy: false
+  isBusy: false,
+  busyAction: ""
 };
 
 const licenseState = {
@@ -230,20 +231,7 @@ function handleSaveKey() {
 async function handleConnect() {
   if (!ensureApiKeyForAction()) return;
 
-  setApiBusy(true, "Verbindung wird vorbereitet...");
-  await shortPause();
-  apiKeyState.isConnected = true;
-  sessionStorage.setItem(SESSION_KEY, "true");
-  setApiBusy(false);
-  renderApiKeyComponent();
-  setKeyFeedback("Verbindung aktiv. Für technische Prüfung nutze Verbindung überprüfen.", "success");
-  setStatus("Bereit", "ready");
-}
-
-async function handleConnectionTest() {
-  if (!ensureApiKeyForAction()) return;
-
-  setApiBusy(true, "Verbindung wird überprüft...");
+  setApiBusy(true, "connect", "Verbindung wird hergestellt...");
   setStatus("Analyse läuft", "warn");
 
   try {
@@ -255,7 +243,32 @@ async function handleConnectionTest() {
 
     apiKeyState.isConnected = true;
     sessionStorage.setItem(SESSION_KEY, "true");
-    setKeyFeedback("Verbindung erfolgreich geprüft.", "success");
+    setKeyFeedback("Verbindung OK. Anthropic ist erreichbar und der API-Key wurde akzeptiert.", "success");
+    setStatus("Bereit", "ready");
+  } catch (error) {
+    handleApiFailure(error);
+  } finally {
+    setApiBusy(false);
+    renderApiKeyComponent();
+  }
+}
+
+async function handleConnectionTest() {
+  if (!ensureApiKeyForAction()) return;
+
+  setApiBusy(true, "test", "Verbindung wird überprüft...");
+  setStatus("Analyse läuft", "warn");
+
+  try {
+    await testClaudeConnection({
+      apiKey: apiKeyState.value,
+      proxyUrl: DEFAULT_PROXY_URL,
+      model: DEFAULT_CLAUDE_MODEL
+    });
+
+    apiKeyState.isConnected = true;
+    sessionStorage.setItem(SESSION_KEY, "true");
+    setKeyFeedback("Verbindung erfolgreich geprüft. Anthropic hat den Test-Request beantwortet.", "success");
     setStatus("Bereit", "ready");
   } catch (error) {
     handleApiFailure(error);
@@ -567,7 +580,10 @@ function renderApiKeyComponent(options = {}) {
     ? "Gespeicherter Key wird teilweise angezeigt. Das Auge zeigt den vollständigen Schlüssel."
     : "Gib deinen Anthropic API-Key ein. Ohne Key wird keine KI-Anfrage gesendet.";
 
-  setButtonLoading(elements.saveKeyBtn, apiKeyState.isBusy);
+  setButtonLoading(elements.saveKeyBtn, apiKeyState.busyAction === "save");
+  setButtonLoading(elements.connectBtn, apiKeyState.busyAction === "connect");
+  setButtonLoading(elements.testConnectionBtn, apiKeyState.busyAction === "test");
+  setButtonLoading(elements.disconnectBtn, apiKeyState.busyAction === "disconnect");
   elements.saveKeyBtn.disabled = apiKeyState.isBusy;
   elements.connectBtn.disabled = apiKeyState.isBusy || !apiKeyState.value;
   elements.testConnectionBtn.disabled = apiKeyState.isBusy || !apiKeyState.value;
@@ -663,8 +679,9 @@ function getApiRecoveryHint(error) {
   return "Hinweis: Prüfe lokalen Proxy, Internetverbindung, API-Key und den gewählten Anthropic-Modellzugriff.";
 }
 
-function setApiBusy(isBusy, message = "") {
+function setApiBusy(isBusy, action = "", message = "") {
   apiKeyState.isBusy = isBusy;
+  apiKeyState.busyAction = isBusy ? action : "";
   elements.saveKeyBtn.disabled = isBusy;
   elements.connectBtn.disabled = isBusy;
   elements.testConnectionBtn.disabled = isBusy;

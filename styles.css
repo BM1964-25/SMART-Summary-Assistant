@@ -20,6 +20,10 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -28,6 +32,7 @@ body {
     linear-gradient(180deg, #071a33 0%, #0b2442 48%, #102f55 100%);
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow-x: clip;
 }
 
 button,
@@ -42,7 +47,7 @@ button {
 }
 
 .app-shell {
-  width: min(1480px, calc(100% - 40px));
+  width: min(1480px, calc(100% - 32px));
   margin: 0 auto;
   padding: 32px 0;
 }
@@ -180,6 +185,7 @@ h2 {
 }
 
 .panel {
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.94);
@@ -294,6 +300,10 @@ h2 {
   margin-bottom: 14px;
 }
 
+.panel-heading > div {
+  min-width: 0;
+}
+
 .panel-heading p {
   margin-bottom: 0;
   color: var(--muted);
@@ -301,7 +311,7 @@ h2 {
 }
 
 .source-heading-copy {
-  white-space: nowrap;
+  max-width: 100%;
 }
 
 .compact {
@@ -320,8 +330,8 @@ h2 {
   resize: vertical;
   overflow-x: hidden;
   overflow-y: auto;
-  min-height: 380px;
-  height: 520px;
+  min-height: 320px;
+  height: clamp(360px, 46vh, 520px);
   display: flex;
 }
 
@@ -478,6 +488,7 @@ select:focus {
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .counter.warn,
@@ -491,6 +502,7 @@ select:focus {
 }
 
 .quality-badge {
+  max-width: 100%;
   padding: 4px 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -498,6 +510,8 @@ select:focus {
   font-size: 0.78rem;
   font-weight: 800;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .quality-badge.success {
@@ -730,16 +744,12 @@ select {
   background: #e7f2ff;
 }
 
-#connectBtn,
-#testConnectionBtn,
 #verifyLicenseBtn {
   border-color: rgba(23, 135, 90, 0.25);
   background: #f1fbf6;
   color: #106943;
 }
 
-#connectBtn:hover:not(:disabled),
-#testConnectionBtn:hover:not(:disabled),
 #verifyLicenseBtn:hover:not(:disabled) {
   border-color: rgba(23, 135, 90, 0.42);
   background: #e3f7ee;
@@ -1096,6 +1106,17 @@ select {
 
   .header-actions {
     align-items: stretch;
+  }
+}
+
+@media (max-width: 1280px) {
+  .input-panel .panel-heading {
+    display: grid;
+    gap: 8px;
+  }
+
+  .source-metrics {
+    justify-content: flex-start;
   }
 }
 

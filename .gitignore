@@ -1,3 +1,4 @@
 .DS_Store
 screenshot*.png
 node_modules/
+macos/SMART Summary Assistant.app/Contents/Resources/App/

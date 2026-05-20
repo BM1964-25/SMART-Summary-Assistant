@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="176" y1="92" x2="848" y2="932" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f5aa7"/>
+      <stop offset="1" stop-color="#071a33"/>
+    </linearGradient>
+    <linearGradient id="sheet" x1="294" y1="232" x2="744" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dceeff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+  <path d="M288 246c0-35 28-63 63-63h243l150 150v445c0 35-28 63-63 63H351c-35 0-63-28-63-63V246Z" fill="url(#sheet)"/>
+  <path d="M594 183v115c0 35 28 63 63 63h87L594 183Z" fill="#b9dcff"/>
+  <path d="M382 428h260" stroke="#0f5aa7" stroke-width="42" stroke-linecap="round"/>
+  <path d="M382 526h260" stroke="#17875a" stroke-width="42" stroke-linecap="round"/>
+  <path d="M382 624h178" stroke="#0f5aa7" stroke-width="42" stroke-linecap="round"/>
+  <circle cx="704" cy="704" r="88" fill="#17875a"/>
+  <path d="M663 704h82M704 663v82" stroke="#ffffff" stroke-width="34" stroke-linecap="round"/>
+</svg>

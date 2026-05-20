@@ -1,0 +1,24 @@
+#!/bin/zsh
+
+APP_ROOT="$(cd "$(dirname "$0")/../Resources/App" && pwd)"
+PORT="8172"
+URL="http://127.0.0.1:${PORT}"
+NODE_BIN="/opt/homebrew/bin/node"
+
+if [ ! -x "$NODE_BIN" ]; then
+  NODE_BIN="/usr/bin/env node"
+fi
+
+cd /tmp || exit 1
+
+if ! /usr/bin/curl --silent --fail "${URL}" >/dev/null 2>&1; then
+  /usr/bin/nohup $NODE_BIN "${APP_ROOT}/localProxyServer.js" >/tmp/smart-summary-assistant.log 2>&1 &
+  for attempt in {1..30}; do
+    if /usr/bin/curl --silent --fail "${URL}" >/dev/null 2>&1; then
+      break
+    fi
+    /bin/sleep 0.2
+  done
+fi
+
+/usr/bin/open "${URL}"
