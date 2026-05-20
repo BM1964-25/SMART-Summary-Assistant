@@ -1,7 +1,14 @@
 #!/bin/zsh
 
-APP_ROOT="$(cd "$(dirname "$0")/../Resources/App" && pwd)"
-PORT="8172"
+PROJECT_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
+BUNDLED_ROOT="$(cd "$(dirname "$0")/../Resources/App" && pwd)"
+
+if [ -f "${PROJECT_ROOT}/localProxyServer.js" ]; then
+  APP_ROOT="${PROJECT_ROOT}"
+else
+  APP_ROOT="${BUNDLED_ROOT}"
+fi
+PORT="8182"
 URL="http://127.0.0.1:${PORT}"
 NODE_BIN="/opt/homebrew/bin/node"
 
