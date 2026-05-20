@@ -14,8 +14,117 @@ const MAX_CHARS = 180000;
 const RECOMMENDED_CHARS = 100000;
 const STORAGE_KEY = "smart-summary-anthropic-key";
 const SESSION_KEY = "smart-summary-session-active";
+const HISTORY_KEY = "smart-summary-history";
+const PROFILE_KEY = "smart-summary-profiles";
+const MAX_HISTORY_ITEMS = 6;
 const DEFAULT_PROXY_URL = "/api/anthropic/messages";
 const DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514";
+const DEMO_LICENSE_KEY = "SMART-DEMO-2026-LOCAL";
+const DEMO_SOURCE_TEXT = [
+  "Projektstatus SMART Kundenportal - Lenkungskreis 20.05.2026",
+  "",
+  "Ziel des Projekts ist die Einführung eines Self-Service-Portals für Bestandskunden. Das Portal soll Support-Anfragen reduzieren, Vertragsinformationen transparenter machen und einfache Änderungsprozesse ohne manuelle E-Mail-Schleifen ermöglichen.",
+  "",
+  "Aktueller Stand: Das UX-Konzept ist freigegeben, die technische Basis steht, und der erste Prototyp deckt Login, Vertragsübersicht und Anfrageformular ab. Die Pilotgruppe aus 25 Kunden startet voraussichtlich am 15.06.2026.",
+  "",
+  "Risiken: Die finale Datenschutzfreigabe steht noch aus. Außerdem ist die Schnittstelle zum CRM stabil, aber die Antwortzeiten liegen in Lasttests teilweise über dem Zielwert von 800 ms. Das Support-Team benötigt noch Schulungsmaterial für neue Eskalationswege.",
+  "",
+  "Entscheidungsbedarf: Der Lenkungskreis soll entscheiden, ob der Pilot mit reduziertem Funktionsumfang startet oder um zwei Wochen verschoben wird. Empfehlung des Projektteams ist ein Start mit reduziertem Umfang, sofern die Datenschutzfreigabe bis 31.05.2026 vorliegt.",
+  "",
+  "Nächste Schritte: Datenschutzfreigabe klären, CRM-Performance optimieren, Pilotkommunikation vorbereiten, Support-Schulung abschließen und Go/No-Go-Entscheidung am 03.06.2026 treffen."
+].join("\n");
+const BUILT_IN_PROFILES = [
+  {
+    id: "builtin-management",
+    name: "Management Briefing",
+    builtIn: true,
+    settings: {
+      template: "Management Briefing",
+      audience: "Management",
+      language: "Deutsch",
+      focus: "Management Summary",
+      tone: "Prägnant",
+      actionMode: "Entscheidung vorbereiten",
+      length: "detailed",
+      format: "Executive Summary"
+    }
+  },
+  {
+    id: "builtin-risk",
+    name: "Risikoanalyse",
+    builtIn: true,
+    settings: {
+      template: "Risikoanalyse",
+      audience: "Management",
+      language: "Deutsch",
+      focus: "Risiken",
+      tone: "Kritisch",
+      actionMode: "Offene Punkte markieren",
+      length: "detailed",
+      format: "Tabelle"
+    }
+  },
+  {
+    id: "builtin-meeting",
+    name: "Meeting-Protokoll",
+    builtIn: true,
+    settings: {
+      template: "Meeting-Protokoll",
+      audience: "Fachteam",
+      language: "Deutsch",
+      focus: "Aufgaben und To-dos",
+      tone: "Neutral",
+      actionMode: "Nächste Schritte ableiten",
+      length: "detailed",
+      format: "Stichpunkte"
+    }
+  },
+  {
+    id: "builtin-project",
+    name: "Projektstatus",
+    builtIn: true,
+    settings: {
+      template: "Projektstatus",
+      audience: "Management",
+      language: "Deutsch",
+      focus: "Management Summary",
+      tone: "Prägnant",
+      actionMode: "Entscheidung vorbereiten",
+      length: "detailed",
+      format: "Executive Summary"
+    }
+  },
+  {
+    id: "builtin-customer",
+    name: "Kundenfassung",
+    builtIn: true,
+    settings: {
+      template: "Standard-Zusammenfassung",
+      audience: "Kunde",
+      language: "Deutsch",
+      focus: "Kernaussagen",
+      tone: "Beratend",
+      actionMode: "Nur zusammenfassen",
+      length: "medium",
+      format: "Fließtext"
+    }
+  },
+  {
+    id: "builtin-technical",
+    name: "Technische Analyse",
+    builtIn: true,
+    settings: {
+      template: "Standard-Zusammenfassung",
+      audience: "Technisch",
+      language: "Deutsch",
+      focus: "Kritische Punkte",
+      tone: "Neutral",
+      actionMode: "Offene Punkte markieren",
+      length: "detailed",
+      format: "Stichpunkte"
+    }
+  }
+];
 
 const apiKeyState = {
   value: "",
@@ -34,12 +143,19 @@ const licenseState = {
 let currentSummaryText = "Noch keine Zusammenfassung erstellt.";
 
 const elements = {
+  layout: document.querySelector(".layout"),
+  viewModeButtons: document.querySelectorAll("[data-view-mode]"),
   sourceText: document.querySelector("#sourceText"),
   charCount: document.querySelector("#charCount"),
   textQuality: document.querySelector("#textQuality"),
+  tokenEstimate: document.querySelector("#tokenEstimate"),
+  paragraphEstimate: document.querySelector("#paragraphEstimate"),
+  languageEstimate: document.querySelector("#languageEstimate"),
+  structureEstimate: document.querySelector("#structureEstimate"),
   pdfInput: document.querySelector("#pdfInput"),
   dropZone: document.querySelector("#dropZone"),
   fileSelectBtn: document.querySelector("#fileSelectBtn"),
+  loadDemoBtn: document.querySelector("#loadDemoBtn"),
   pdfStatus: document.querySelector("#pdfStatus"),
   apiKey: document.querySelector("#apiKey"),
   rememberKey: document.querySelector("#rememberKey"),
@@ -56,18 +172,35 @@ const elements = {
   licenseKey: document.querySelector("#licenseKey"),
   saveLicenseBtn: document.querySelector("#saveLicenseBtn"),
   verifyLicenseBtn: document.querySelector("#verifyLicenseBtn"),
+  useDemoLicenseBtn: document.querySelector("#useDemoLicenseBtn"),
   licenseBadge: document.querySelector("#licenseBadge"),
   licenseFeedback: document.querySelector("#licenseFeedback"),
+  profileSelect: document.querySelector("#profileSelect"),
+  applyProfileBtn: document.querySelector("#applyProfileBtn"),
+  saveProfileBtn: document.querySelector("#saveProfileBtn"),
+  deleteProfileBtn: document.querySelector("#deleteProfileBtn"),
+  profileFeedback: document.querySelector("#profileFeedback"),
+  templateSelect: document.querySelector("#templateSelect"),
   lengthSelect: document.querySelector("#lengthSelect"),
   languageSelect: document.querySelector("#languageSelect"),
   focusSelect: document.querySelector("#focusSelect"),
   formatSelect: document.querySelector("#formatSelect"),
+  audienceSelect: document.querySelector("#audienceSelect"),
+  toneSelect: document.querySelector("#toneSelect"),
+  actionModeSelect: document.querySelector("#actionModeSelect"),
   summarizeBtn: document.querySelector("#summarizeBtn"),
+  quickSummarizeBtn: document.querySelector("#quickSummarizeBtn"),
+  quickActionTitle: document.querySelector("#quickActionTitle"),
+  quickActionMeta: document.querySelector("#quickActionMeta"),
   summaryOutput: document.querySelector("#summaryOutput"),
   copyBtn: document.querySelector("#copyBtn"),
   exportMdBtn: document.querySelector("#exportMdBtn"),
   exportTxtBtn: document.querySelector("#exportTxtBtn"),
+  exportHtmlBtn: document.querySelector("#exportHtmlBtn"),
+  printPdfBtn: document.querySelector("#printPdfBtn"),
   resetBtn: document.querySelector("#resetBtn"),
+  historyList: document.querySelector("#historyList"),
+  clearHistoryBtn: document.querySelector("#clearHistoryBtn"),
   statusText: document.querySelector("#statusText"),
   statusDot: document.querySelector("#statusDot")
 };
@@ -93,8 +226,11 @@ function init() {
 
   updateCharacterCount();
   bindEvents();
+  setViewMode(getDefaultViewMode());
+  renderProfiles();
   renderApiKeyComponent();
   renderLicenseComponent();
+  renderHistory();
   setApiKeyPanelOpen(false);
   setKeyFeedback(hasSavedKey ? "Gespeicherter API-Key geladen." : "Noch kein gültiger API-Key gespeichert.", hasSavedKey ? "success" : "info");
   setStatus(hasSavedKey ? "Bereit" : "API-Key fehlt", hasSavedKey ? "ready" : "warn");
@@ -112,21 +248,38 @@ function bindEvents() {
     if (file) processSelectedFile(file);
   });
   elements.fileSelectBtn.addEventListener("click", () => elements.pdfInput.click());
+  elements.loadDemoBtn.addEventListener("click", loadDemoSource);
   elements.dropZone.addEventListener("dragenter", handleDragEnter);
   elements.dropZone.addEventListener("dragover", handleDragEnter);
   elements.dropZone.addEventListener("dragleave", handleDragLeave);
   elements.dropZone.addEventListener("drop", handleFileDrop);
+  elements.viewModeButtons.forEach((button) => {
+    button.addEventListener("click", () => setViewMode(button.dataset.viewMode));
+  });
   elements.summarizeBtn.addEventListener("click", handleSummarize);
+  elements.quickSummarizeBtn.addEventListener("click", handleSummarize);
   elements.copyBtn.addEventListener("click", copySummary);
   elements.exportMdBtn.addEventListener("click", () => exportSummary("md"));
   elements.exportTxtBtn.addEventListener("click", () => exportSummary("txt"));
+  elements.exportHtmlBtn.addEventListener("click", exportSummaryHtml);
+  elements.printPdfBtn.addEventListener("click", printSummaryAsPdf);
   elements.resetBtn.addEventListener("click", resetWorkspace);
+  elements.historyList.addEventListener("click", handleHistoryClick);
+  elements.clearHistoryBtn.addEventListener("click", clearHistory);
   elements.saveKeyBtn.addEventListener("click", handleSaveKey);
   elements.connectBtn.addEventListener("click", handleConnect);
   elements.testConnectionBtn.addEventListener("click", handleConnectionTest);
   elements.disconnectBtn.addEventListener("click", handleDisconnect);
   elements.saveLicenseBtn.addEventListener("click", handleSaveLicense);
   elements.verifyLicenseBtn.addEventListener("click", handleVerifyLicense);
+  elements.useDemoLicenseBtn.addEventListener("click", useDemoLicense);
+  elements.applyProfileBtn.addEventListener("click", applySelectedProfile);
+  elements.saveProfileBtn.addEventListener("click", saveCurrentProfile);
+  elements.deleteProfileBtn.addEventListener("click", deleteSelectedProfile);
+  elements.profileSelect.addEventListener("change", () => {
+    updateProfileActions();
+    applySelectedProfile();
+  });
   elements.licenseKey.addEventListener("input", () => {
     licenseState.active = false;
     clearLicenseSession();
@@ -172,6 +325,16 @@ function handleSaveLicense() {
   saveLicenseKey(key);
   setLicenseFeedback(key ? "Lizenzschlüssel gespeichert. Bitte Lizenz prüfen." : "Bitte Lizenzschlüssel eingeben.", key ? "info" : "error");
   renderLicenseComponent();
+}
+
+function useDemoLicense() {
+  elements.licenseKey.value = DEMO_LICENSE_KEY;
+  licenseState.key = DEMO_LICENSE_KEY;
+  licenseState.active = false;
+  clearLicenseSession();
+  saveLicenseKey(DEMO_LICENSE_KEY);
+  renderLicenseComponent();
+  setLicenseFeedback("Demo-Lizenz eingetragen. Klicke auf Lizenz prüfen.", "info");
 }
 
 async function handleVerifyLicense() {
@@ -366,7 +529,7 @@ async function handleSummarize() {
   }
 
   persistSettings();
-  elements.summarizeBtn.disabled = true;
+  setSummaryButtonsDisabled(true);
 
   try {
     setStatus("Analyse läuft", "warn");
@@ -381,12 +544,18 @@ async function handleSummarize() {
       length: elements.lengthSelect.value,
       language: elements.languageSelect.value,
       focus: elements.focusSelect.value,
-      format: elements.formatSelect.value
+      format: elements.formatSelect.value,
+      template: elements.templateSelect.value,
+      audience: elements.audienceSelect.value,
+      tone: elements.toneSelect.value,
+      actionMode: elements.actionModeSelect.value
     });
 
     setStatus("Qualität wird geprüft", "warn");
     await shortPause();
     setSummaryOutput(summary);
+    saveSummaryToHistory(summary);
+    setViewMode("result");
     setStatus("Ausgabe fertig", "ready");
   } catch (error) {
     handleApiFailure(error);
@@ -398,7 +567,7 @@ async function handleSummarize() {
       getApiRecoveryHint(error)
     ].join("\n"));
   } finally {
-    elements.summarizeBtn.disabled = false;
+    setSummaryButtonsDisabled(false);
   }
 }
 
@@ -509,12 +678,226 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+function getCurrentProfileSettings() {
+  return {
+    template: elements.templateSelect.value,
+    audience: elements.audienceSelect.value,
+    language: elements.languageSelect.value,
+    focus: elements.focusSelect.value,
+    tone: elements.toneSelect.value,
+    actionMode: elements.actionModeSelect.value,
+    length: elements.lengthSelect.value,
+    format: elements.formatSelect.value
+  };
+}
+
+function applyProfileSettings(settings) {
+  setSelectValue(elements.templateSelect, settings.template);
+  setSelectValue(elements.audienceSelect, settings.audience);
+  setSelectValue(elements.languageSelect, settings.language);
+  setSelectValue(elements.focusSelect, settings.focus);
+  setSelectValue(elements.toneSelect, settings.tone);
+  setSelectValue(elements.actionModeSelect, settings.actionMode);
+  setSelectValue(elements.lengthSelect, settings.length);
+  setSelectValue(elements.formatSelect, settings.format);
+}
+
+function setSelectValue(select, value) {
+  if (!value) return;
+  const hasOption = Array.from(select.options).some((option) => option.value === value);
+  if (hasOption) select.value = value;
+}
+
+function loadCustomProfiles() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PROFILE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomProfiles(profiles) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
+}
+
+function getAllProfiles() {
+  return [...BUILT_IN_PROFILES, ...loadCustomProfiles()];
+}
+
+function renderProfiles(selectedId = elements.profileSelect?.value || "") {
+  const customProfiles = loadCustomProfiles();
+  const options = [
+    '<option value="">Profil auswählen...</option>',
+    '<optgroup label="Vordefiniert">',
+    ...BUILT_IN_PROFILES.map((profile) => `<option value="${escapeHtml(profile.id)}">${escapeHtml(profile.name)}</option>`),
+    "</optgroup>"
+  ];
+
+  if (customProfiles.length) {
+    options.push(
+      '<optgroup label="Eigene Profile">',
+      ...customProfiles.map((profile) => `<option value="${escapeHtml(profile.id)}">${escapeHtml(profile.name)}</option>`),
+      "</optgroup>"
+    );
+  }
+
+  elements.profileSelect.innerHTML = options.join("");
+  if (getAllProfiles().some((profile) => profile.id === selectedId)) {
+    elements.profileSelect.value = selectedId;
+  } else {
+    elements.profileSelect.value = "";
+  }
+  updateProfileActions();
+}
+
+function getSelectedProfile() {
+  return getAllProfiles().find((profile) => profile.id === elements.profileSelect.value);
+}
+
+function updateProfileActions() {
+  const profile = getSelectedProfile();
+  elements.applyProfileBtn.disabled = !profile;
+  elements.deleteProfileBtn.disabled = !profile || profile.builtIn;
+}
+
+function applySelectedProfile() {
+  const profile = getSelectedProfile();
+  if (!profile) return;
+
+  applyProfileSettings(profile.settings);
+  setProfileFeedback(`Profil angewendet: ${profile.name}`);
+}
+
+function saveCurrentProfile() {
+  const rawName = window.prompt("Name für das neue Profil:", "Mein Profil");
+  const name = rawName?.trim();
+  if (!name) return;
+
+  const customProfiles = loadCustomProfiles();
+  const existingIndex = customProfiles.findIndex((profile) => profile.name.toLowerCase() === name.toLowerCase());
+  const existingProfile = existingIndex >= 0 ? customProfiles[existingIndex] : null;
+
+  if (existingProfile && !window.confirm(`Profil "${name}" überschreiben?`)) return;
+
+  const profile = {
+    id: existingProfile?.id || `custom-${Date.now()}`,
+    name,
+    builtIn: false,
+    settings: getCurrentProfileSettings()
+  };
+
+  if (existingIndex >= 0) {
+    customProfiles[existingIndex] = profile;
+  } else {
+    customProfiles.push(profile);
+  }
+
+  saveCustomProfiles(customProfiles);
+  renderProfiles(profile.id);
+  setProfileFeedback(`Profil gespeichert: ${name}`);
+}
+
+function deleteSelectedProfile() {
+  const profile = getSelectedProfile();
+  if (!profile || profile.builtIn) return;
+  if (!window.confirm(`Profil "${profile.name}" wirklich löschen?`)) return;
+
+  saveCustomProfiles(loadCustomProfiles().filter((item) => item.id !== profile.id));
+  renderProfiles("");
+  setProfileFeedback("Profil gelöscht");
+}
+
+function setProfileFeedback(message) {
+  elements.profileFeedback.textContent = message;
+}
+
 function updateCharacterCount() {
-  const count = elements.sourceText.value.length;
+  const text = elements.sourceText.value;
+  const count = text.length;
   elements.charCount.textContent = `${count.toLocaleString("de-DE")} Zeichen`;
   elements.charCount.classList.toggle("warn", count > RECOMMENDED_CHARS && count <= MAX_CHARS);
   elements.charCount.classList.toggle("danger", count > MAX_CHARS);
   updateTextQuality(count);
+  updateSourceInsights(text, count);
+  updateQuickAction(count);
+}
+
+function loadDemoSource() {
+  elements.sourceText.value = DEMO_SOURCE_TEXT;
+  elements.pdfInput.value = "";
+  elements.pdfStatus.textContent = "Demoquelle geladen";
+  elements.templateSelect.value = "Projektstatus";
+  elements.focusSelect.value = "Management Summary";
+  elements.formatSelect.value = "Executive Summary";
+  elements.audienceSelect.value = "Management";
+  elements.toneSelect.value = "Prägnant";
+  elements.actionModeSelect.value = "Entscheidung vorbereiten";
+  elements.lengthSelect.value = "detailed";
+  updateCharacterCount();
+  setViewMode("source");
+  setStatus("Demoquelle geladen", "ready");
+  setSummaryOutput("Noch keine Zusammenfassung erstellt.", true);
+}
+
+function getDefaultViewMode() {
+  return window.matchMedia("(max-width: 1050px)").matches ? "source" : "split";
+}
+
+function setViewMode(mode) {
+  const allowedModes = ["source", "result", "split"];
+  const nextMode = allowedModes.includes(mode) ? mode : "split";
+
+  elements.layout.dataset.view = nextMode;
+  elements.viewModeButtons.forEach((button) => {
+    const isActive = button.dataset.viewMode === nextMode;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+}
+
+function updateSourceInsights(text, count = text.length) {
+  const trimmed = text.trim();
+  const tokenEstimate = Math.ceil(count / 4);
+  const paragraphs = trimmed ? trimmed.split(/\n\s*\n/).filter(Boolean).length : 0;
+  const structure = getStructureEstimate(trimmed, paragraphs);
+
+  elements.tokenEstimate.textContent = `ca. ${tokenEstimate.toLocaleString("de-DE")}`;
+  elements.paragraphEstimate.textContent = paragraphs.toLocaleString("de-DE");
+  elements.languageEstimate.textContent = detectLikelyLanguage(trimmed);
+  elements.structureEstimate.textContent = structure;
+}
+
+function getStructureEstimate(text, paragraphCount) {
+  if (!text) return "keine Quelle";
+
+  const headingMatches = text.match(/(^|\n)\s{0,3}(#{1,3}\s+\S|[A-ZÄÖÜ][^\n]{2,80}\n[-=]{3,})/g) || [];
+  const listMatches = text.match(/(^|\n)\s*([-*]|\d+\.)\s+\S/g) || [];
+
+  if (headingMatches.length >= 2 || listMatches.length >= 4) return "gut strukturiert";
+  if (paragraphCount >= 3) return "Absätze erkannt";
+  if (text.length >= 300) return "Fließtext";
+  return "sehr kurz";
+}
+
+function detectLikelyLanguage(text) {
+  if (!text) return "-";
+
+  const sample = text.toLowerCase().slice(0, 4000);
+  const germanHits = countMatches(sample, [" der ", " die ", " das ", " und ", " nicht ", " ist ", " für ", " mit "]);
+  const englishHits = countMatches(sample, [" the ", " and ", " of ", " to ", " is ", " for ", " with ", " not "]);
+  const frenchHits = countMatches(sample, [" le ", " la ", " les ", " et ", " des ", " pour ", " avec ", " pas "]);
+  const scores = [
+    ["Deutsch", germanHits],
+    ["Englisch", englishHits],
+    ["Französisch", frenchHits]
+  ].sort((a, b) => b[1] - a[1]);
+
+  return scores[0][1] > 0 ? scores[0][0] : "unklar";
+}
+
+function countMatches(value, needles) {
+  return needles.reduce((total, needle) => total + value.split(needle).length - 1, 0);
 }
 
 function updateTextQuality(count = elements.sourceText.value.length) {
@@ -550,6 +933,9 @@ function setStatus(label, type) {
   elements.statusText.textContent = label === "Bereit" ? "System bereit" : label;
   elements.statusDot.classList.toggle("warn", type === "warn");
   elements.statusDot.classList.toggle("danger", type === "danger");
+  if (elements.quickActionTitle) {
+    elements.quickActionTitle.textContent = label === "Bereit" ? "Bereit zur Zusammenfassung" : label;
+  }
 }
 
 function persistSettings() {
@@ -599,6 +985,7 @@ function renderLicenseComponent() {
   elements.licenseBadge.classList.toggle("is-connected", licenseState.active);
   elements.saveLicenseBtn.disabled = licenseState.isBusy;
   elements.verifyLicenseBtn.disabled = licenseState.isBusy || !elements.licenseKey.value.trim();
+  elements.useDemoLicenseBtn.disabled = licenseState.isBusy;
 }
 
 function setLicenseFeedback(message, type) {
@@ -694,6 +1081,26 @@ function setButtonLoading(button, isLoading) {
   button.classList.toggle("is-loading", isLoading);
 }
 
+function setSummaryButtonsDisabled(isDisabled) {
+  elements.summarizeBtn.disabled = isDisabled;
+  elements.quickSummarizeBtn.disabled = isDisabled;
+}
+
+function updateQuickAction(count = elements.sourceText.value.length) {
+  if (!elements.quickActionMeta) return;
+
+  const formattedCount = count.toLocaleString("de-DE");
+  const sizeHint = count > MAX_CHARS
+    ? "Text ist zu groß"
+    : count > RECOMMENDED_CHARS
+      ? "sehr langer Text"
+      : count > 0
+        ? "Quelle bereit"
+        : "noch keine Quelle";
+
+  elements.quickActionMeta.textContent = `${formattedCount} Zeichen - ${sizeHint}`;
+}
+
 function setKeyFeedback(message, type) {
   elements.keyFeedback.textContent = message;
   elements.keyFeedback.classList.remove("success", "error", "loading", "info");
@@ -721,13 +1128,143 @@ function exportSummary(extension) {
   URL.revokeObjectURL(link.href);
 }
 
+function exportSummaryHtml() {
+  const summary = currentSummaryText.trim();
+  if (!summary || summary === "Noch keine Zusammenfassung erstellt.") return;
+
+  const title = `SMART Summary Export - ${new Date().toLocaleDateString("de-DE")}`;
+  const html = [
+    "<!DOCTYPE html>",
+    "<html lang=\"de\">",
+    "<head>",
+    "<meta charset=\"UTF-8\">",
+    `<title>${escapeHtml(title)}</title>`,
+    "<style>",
+    "body{font-family:Inter,Arial,sans-serif;max-width:880px;margin:40px auto;padding:0 24px;color:#142033;line-height:1.55}",
+    "h1{font-size:24px;margin-bottom:8px} .meta{color:#607086;margin-bottom:28px}",
+    "table{width:100%;border-collapse:collapse} th,td{border:1px solid #d8e0ea;padding:8px;text-align:left;vertical-align:top} th{background:#f1f6fc}",
+    "</style>",
+    "</head>",
+    "<body>",
+    "<h1>SMART Summary Export</h1>",
+    `<p class=\"meta\">${escapeHtml(new Date().toLocaleString("de-DE"))}</p>`,
+    renderStructuredOutput(summary),
+    "</body>",
+    "</html>"
+  ].join("\n");
+
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "smart-summary.html";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function printSummaryAsPdf() {
+  const summary = currentSummaryText.trim();
+  if (!summary || summary === "Noch keine Zusammenfassung erstellt.") return;
+  window.print();
+}
+
 function resetWorkspace() {
+  const hasSource = elements.sourceText.value.trim().length > 0;
+  const hasSummary = currentSummaryText.trim() && currentSummaryText !== "Noch keine Zusammenfassung erstellt.";
+
+  if ((hasSource || hasSummary) && !window.confirm("Arbeitsbereich wirklich leeren? Quelle und aktuelles Ergebnis werden entfernt. API-Key, Lizenz und Verlauf bleiben erhalten.")) {
+    return;
+  }
+
   elements.sourceText.value = "";
   elements.pdfInput.value = "";
   elements.pdfStatus.textContent = "Keine Datei ausgewählt";
   setSummaryOutput("Noch keine Zusammenfassung erstellt.", true);
   updateCharacterCount();
+  setViewMode(getDefaultViewMode());
   setStatus(apiKeyState.value ? "Bereit" : "API-Key fehlt", apiKeyState.value ? "ready" : "warn");
+}
+
+function loadHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(items) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, MAX_HISTORY_ITEMS)));
+}
+
+function saveSummaryToHistory(summary) {
+  const text = summary.trim();
+  if (!text) return;
+
+  const source = elements.sourceText.value.trim();
+  const item = {
+    id: String(Date.now()),
+    createdAt: new Date().toISOString(),
+    summary: text,
+    sourcePreview: source.slice(0, 140),
+    template: elements.templateSelect.value,
+    format: elements.formatSelect.value,
+    language: elements.languageSelect.value,
+    audience: elements.audienceSelect.value
+  };
+
+  const history = loadHistory().filter((entry) => entry.summary !== text);
+  saveHistory([item, ...history]);
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  elements.clearHistoryBtn.disabled = history.length === 0;
+
+  if (!history.length) {
+    elements.historyList.innerHTML = '<p class="history-empty">Noch keine gespeicherte Zusammenfassung.</p>';
+    return;
+  }
+
+  elements.historyList.innerHTML = history.map((item) => {
+    const date = new Date(item.createdAt);
+    const dateLabel = Number.isNaN(date.getTime())
+      ? "Unbekanntes Datum"
+      : date.toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" });
+    return [
+      `<article class="history-item">`,
+      `<div>`,
+      `<strong>${escapeHtml(item.template || "Zusammenfassung")}</strong>`,
+      `<span>${escapeHtml(dateLabel)} - ${escapeHtml(item.format || "Format offen")} - ${escapeHtml(item.language || "Sprache offen")} - ${escapeHtml(item.audience || "Zielgruppe offen")}</span>`,
+      `<p>${escapeHtml(item.sourcePreview || "Keine Quellenvorschau gespeichert.")}</p>`,
+      `</div>`,
+      `<button type="button" data-history-id="${escapeHtml(item.id)}">Laden</button>`,
+      `</article>`
+    ].join("");
+  }).join("");
+}
+
+function handleHistoryClick(event) {
+  const button = event.target.closest("[data-history-id]");
+  if (!button) return;
+
+  const item = loadHistory().find((entry) => entry.id === button.dataset.historyId);
+  if (!item) return;
+
+  setSummaryOutput(item.summary);
+  setViewMode("result");
+  setStatus("Verlauf geladen", "ready");
+}
+
+function clearHistory() {
+  const history = loadHistory();
+  if (!history.length) return;
+  if (!window.confirm("Lokalen Verlauf wirklich leeren? Die gespeicherten Zusammenfassungen werden aus diesem Browser entfernt.")) return;
+
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+  setStatus("Verlauf geleert", "ready");
 }
 
 function shortPause() {

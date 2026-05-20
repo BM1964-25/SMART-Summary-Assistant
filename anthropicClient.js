@@ -1,6 +1,16 @@
 export const DEFAULT_MODEL = "claude-sonnet-4-20250514";
 
-export function buildPrompts({ text, length, language, focus, format }) {
+export function buildPrompts({
+  text,
+  length,
+  language,
+  focus,
+  format,
+  template = "Standard-Zusammenfassung",
+  audience = "Allgemein",
+  tone = "Neutral",
+  actionMode = "Nur zusammenfassen"
+}) {
   const lengthMap = {
     short: "Kurz: exakt 2 bis 3 präzise Sätze.",
     medium: "Mittel: ein kompakter, gut lesbarer Absatz.",
@@ -49,6 +59,42 @@ export function buildPrompts({ text, length, language, focus, format }) {
     ]
   };
 
+  const templateMap = {
+    "Standard-Zusammenfassung": [
+      "Erstelle eine universell nutzbare Zusammenfassung ohne zusätzliche Spezialstruktur."
+    ],
+    "Meeting-Protokoll": [
+      "Strukturiere als kompaktes Meeting-Protokoll.",
+      "Bevorzuge die Abschnitte: Thema/Kontext, Beschlüsse, Aufgaben, offene Punkte, nächste Schritte.",
+      "Nenne Verantwortliche, Termine oder Abhängigkeiten nur, wenn sie im Inhalt erkennbar sind."
+    ],
+    "Management Briefing": [
+      "Strukturiere als Management Briefing für Führungskräfte.",
+      "Bevorzuge die Abschnitte: Kernbotschaft, geschäftliche Relevanz, Auswirkungen, Risiken, empfohlene Entscheidung.",
+      "Halte Formulierungen knapp, entscheidungsorientiert und belastbar."
+    ],
+    Risikoanalyse: [
+      "Strukturiere als Risikoanalyse.",
+      "Bevorzuge die Abschnitte: Hauptrisiken, Eintrittstreiber, Auswirkungen, Gegenmaßnahmen, offene Annahmen.",
+      "Unterscheide klar zwischen belegtem Risiko und plausibler Unsicherheit."
+    ],
+    Projektstatus: [
+      "Strukturiere als Projektstatus.",
+      "Bevorzuge die Abschnitte: Status, Fortschritt, Blocker, Risiken, nächste Schritte.",
+      "Kennzeichne unklare Ampel- oder Statusaussagen, wenn der Inhalt keine eindeutige Bewertung erlaubt."
+    ],
+    Entscheidungsvorlage: [
+      "Strukturiere als Entscheidungsvorlage.",
+      "Bevorzuge die Abschnitte: Entscheidungspunkt, Optionen, Bewertung, Empfehlung, Risiken, offene Punkte.",
+      "Gib keine Empfehlung aus, wenn sie aus dem Inhalt nicht belastbar ableitbar ist."
+    ],
+    "To-do-Liste": [
+      "Strukturiere als umsetzbare To-do-Liste.",
+      "Bevorzuge kurze Aufgaben mit Ziel, Kontext, Priorität und nächstem Schritt.",
+      "Nenne Verantwortliche oder Fristen nur, wenn sie im Inhalt enthalten sind."
+    ]
+  };
+
   const languageStyleMap = {
     Deutsch: "Verwende professionelles, klares Business-Deutsch.",
     Englisch: "Use clear, professional business English.",
@@ -57,10 +103,41 @@ export function buildPrompts({ text, length, language, focus, format }) {
     Italienisch: "Usa un italiano professionale, chiaro e preciso."
   };
 
+  const audienceMap = {
+    Allgemein: "Schreibe für eine fachlich gemischte Zielgruppe ohne unnötige Spezialbegriffe.",
+    Management: "Schreibe für Entscheider: priorisiere Relevanz, Auswirkungen, Risiken und klare Entscheidungspunkte.",
+    Fachteam: "Schreibe für ein Fachteam: nutze präzise Begriffe, fachliche Zusammenhänge und umsetzbare Details.",
+    Kunde: "Schreibe kundenorientiert: klar, vertrauenswürdig, nutzenbezogen und ohne interne Annahmen offenzulegen.",
+    Technisch: "Schreibe für technische Leser: benenne Systeme, Abhängigkeiten, Einschränkungen und technische Konsequenzen präzise.",
+    Juristisch: "Schreibe mit juristischer Vorsicht: trenne Fakten, Risiken, Pflichten, offene Prüfungen und nicht belegte Bewertung strikt.",
+    "Einfach verständlich": "Schreibe leicht verständlich: kurze Sätze, einfache Begriffe und erklärende Einordnung ohne Fachjargon."
+  };
+
+  const toneMap = {
+    Neutral: "Nutze einen neutralen, sachlichen Ton.",
+    Prägnant: "Formuliere besonders knapp, direkt und ohne Nebenformulierungen.",
+    Formal: "Nutze einen formalen, geschäftlichen Stil mit klarer Struktur.",
+    Beratend: "Formuliere beratend und lösungsorientiert, ohne unbelegte Empfehlungen zu erfinden.",
+    Kritisch: "Prüfe kritisch: hebe Schwächen, Risiken, Widersprüche und fragliche Annahmen sichtbar hervor.",
+    "Einfach erklärt": "Erkläre verständlich und ruhig, mit kurzen Sätzen und klarer Einordnung."
+  };
+
+  const actionModeMap = {
+    "Nur zusammenfassen": "Fasse den Inhalt zusammen, ohne zusätzliche Empfehlungen oder nächste Schritte abzuleiten.",
+    "Empfehlungen ergänzen": "Ergänze Empfehlungen nur, wenn sie eindeutig aus dem Inhalt ableitbar sind, und trenne sie von belegten Fakten.",
+    "Nächste Schritte ableiten": "Leite konkrete nächste Schritte aus dem Inhalt ab und kennzeichne offene Voraussetzungen.",
+    "Entscheidung vorbereiten": "Bereite eine Entscheidung vor: stelle Optionen, Kriterien, Risiken und offene Punkte entscheidungsorientiert dar.",
+    "Offene Punkte markieren": "Markiere offene Punkte, fehlende Informationen, Widersprüche und notwendige Klärungen besonders deutlich."
+  };
+
   const resolvedLength = lengthMap[length] || lengthMap.medium;
   const resolvedFocus = focusMap[focus] || focusMap.Allgemein;
   const resolvedFormatRules = formatMap[format] || formatMap.Fließtext;
+  const resolvedTemplateRules = templateMap[template] || templateMap["Standard-Zusammenfassung"];
   const resolvedLanguageStyle = languageStyleMap[language] || `Halte die Ausgabesprache strikt ein: ${language}.`;
+  const resolvedAudience = audienceMap[audience] || audienceMap.Allgemein;
+  const resolvedTone = toneMap[tone] || toneMap.Neutral;
+  const resolvedActionMode = actionModeMap[actionMode] || actionModeMap["Nur zusammenfassen"];
 
   const qualityRules = [
     "Arbeite wie ein Senior Business Analyst: präzise, entscheidungsorientiert, nüchtern und gut strukturiert.",
@@ -86,6 +163,12 @@ export function buildPrompts({ text, length, language, focus, format }) {
     `Zielsprache: ${language}.`,
     `Gewünschte Länge: ${resolvedLength}`,
     `Fokus: ${focus}. ${resolvedFocus}`,
+    `Vorlage: ${template}.`,
+    `Zielgruppe: ${audience}. ${resolvedAudience}`,
+    `Ton/Stil: ${tone}. ${resolvedTone}`,
+    `Handlungsorientierung: ${actionMode}. ${resolvedActionMode}`,
+    "Vorlagenregeln:",
+    ...resolvedTemplateRules.map((rule) => `- ${rule}`),
     `Ausgabeformat: ${format}.`,
     "Formatregeln:",
     ...resolvedFormatRules.map((rule) => `- ${rule}`),
@@ -100,7 +183,14 @@ export function buildPrompts({ text, length, language, focus, format }) {
     `- Sprache: ${language}`,
     `- Länge: ${resolvedLength}`,
     `- Fokus: ${focus} (${resolvedFocus})`,
+    `- Vorlage: ${template}`,
+    `- Zielgruppe: ${audience} (${resolvedAudience})`,
+    `- Ton/Stil: ${tone} (${resolvedTone})`,
+    `- Handlungsorientierung: ${actionMode} (${resolvedActionMode})`,
     `- Ausgabeformat: ${format}`,
+    "",
+    "Vorlagenregeln:",
+    ...resolvedTemplateRules.map((rule) => `- ${rule}`),
     "",
     "Formatregeln:",
     ...resolvedFormatRules.map((rule) => `- ${rule}`),
@@ -119,8 +209,31 @@ export function buildPrompts({ text, length, language, focus, format }) {
   return { systemPrompt, userPrompt };
 }
 
-export async function requestClaudeSummary({ apiKey, proxyUrl, model, text, length, language, focus, format }) {
-  const { systemPrompt, userPrompt } = buildPrompts({ text, length, language, focus, format });
+export async function requestClaudeSummary({
+  apiKey,
+  proxyUrl,
+  model,
+  text,
+  length,
+  language,
+  focus,
+  format,
+  template,
+  audience,
+  tone,
+  actionMode
+}) {
+  const { systemPrompt, userPrompt } = buildPrompts({
+    text,
+    length,
+    language,
+    focus,
+    format,
+    template,
+    audience,
+    tone,
+    actionMode
+  });
 
   const response = await fetch(proxyUrl || "/api/anthropic/messages", {
     method: "POST",

@@ -1,6 +1,7 @@
 const LICENSE_STORAGE_KEY = "smart-summary-license-key";
 const LICENSE_SESSION_KEY = "smart-summary-license-active";
 const DEFAULT_LICENSE_ENDPOINT = "/api/license/verify";
+const DEMO_LICENSE_KEY = "SMART-DEMO-2026-LOCAL";
 
 export function loadStoredLicense() {
   return {
@@ -23,6 +24,10 @@ export function setLicenseSessionActive() {
 
 export async function verifyLicenseKey(key, endpoint = DEFAULT_LICENSE_ENDPOINT) {
   const normalizedKey = normalizeLicenseKey(key);
+
+  if (normalizedKey === DEMO_LICENSE_KEY) {
+    return verifyOfflineDemoLicense(normalizedKey);
+  }
 
   if (!isPlausibleLicenseKey(normalizedKey)) {
     throw createLicenseError("Der Lizenzschlüssel muss im Format SMART-XXXX-XXXX-XXXX vorliegen.");
@@ -66,7 +71,7 @@ export function isPlausibleLicenseKey(key) {
 }
 
 function verifyOfflineDemoLicense(key) {
-  if (key === "SMART-DEMO-2026-LOCAL") {
+  if (key === DEMO_LICENSE_KEY) {
     return {
       valid: true,
       mode: "local-demo",

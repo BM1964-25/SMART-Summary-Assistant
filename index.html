@@ -10,10 +10,13 @@
   <input type="checkbox" class="help-toggle" id="helpToggle" aria-hidden="true">
   <div class="app-shell">
     <header class="app-header">
-      <div>
-        <p class="eyebrow">Lokale KI-Arbeitsoberfläche</p>
-        <h1>SMART Summary Assistant</h1>
-        <p class="lead">KI-gestützte Zusammenfassungen für maximale Effizienz: Strukturierte Erkenntnisse aus komplexen Dokumenten und Fachinhalten – schnell, präzise und lokal.</p>
+      <div class="brand-block">
+        <img class="app-icon" src="assets/smart-summary-icon.png" alt="" aria-hidden="true">
+        <div>
+          <p class="eyebrow">Lokale KI-Arbeitsoberfläche</p>
+          <h1>SMART Summary Assistant</h1>
+          <p class="lead">KI-gestützte Zusammenfassungen für maximale Effizienz: Strukturierte Erkenntnisse aus komplexen Dokumenten und Fachinhalten – schnell, präzise und lokal.</p>
+        </div>
       </div>
       <div class="header-actions">
         <label class="help-button" for="helpToggle" aria-label="Hilfe öffnen">
@@ -77,11 +80,33 @@
           <textarea id="sourceText" placeholder="Füge hier den zu analysierenden Text ein..." spellcheck="true"></textarea>
         </div>
 
+        <div class="source-insights" aria-label="Quellenanalyse">
+          <div>
+            <span>Token-Schätzung</span>
+            <strong id="tokenEstimate">ca. 0</strong>
+          </div>
+          <div>
+            <span>Absätze</span>
+            <strong id="paragraphEstimate">0</strong>
+          </div>
+          <div>
+            <span>Erkannte Sprache</span>
+            <strong id="languageEstimate">-</strong>
+          </div>
+          <div>
+            <span>Struktur</span>
+            <strong id="structureEstimate">keine Quelle</strong>
+          </div>
+        </div>
+
         <div class="drop-zone" id="dropZone" aria-label="Datei per Drag and Drop einfügen">
           <strong>Datei per Drag & Drop ablegen</strong>
           <span class="format-list">TXT, MD, PDF, DOCX, RTF, HTML, CSV</span>
           <span id="pdfStatus">Keine Datei ausgewählt</span>
-          <button type="button" class="file-select-button" id="fileSelectBtn">Datei auswählen</button>
+          <div class="drop-actions">
+            <button type="button" class="file-select-button" id="fileSelectBtn">Datei auswählen</button>
+            <button type="button" class="demo-load-button" id="loadDemoBtn">Demo laden</button>
+          </div>
           <input id="pdfInput" type="file" accept=".txt,.md,.pdf,.docx,.rtf,.html,.csv,application/pdf,text/plain,text/markdown,text/html,text/csv,application/rtf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
         </div>
 
@@ -96,13 +121,43 @@
           </div>
         </div>
 
+        <div class="profile-bar" aria-label="Profile für Zusammenfassungsparameter">
+          <div class="field profile-field">
+            <label for="profileSelect">Profil</label>
+            <select id="profileSelect"></select>
+          </div>
+          <div class="profile-actions">
+            <button type="button" id="applyProfileBtn">Profil anwenden</button>
+            <button type="button" id="saveProfileBtn">Aktuelle Einstellungen speichern</button>
+            <button type="button" id="deleteProfileBtn">Profil löschen</button>
+          </div>
+          <p class="profile-feedback" id="profileFeedback" role="status" aria-live="polite"></p>
+        </div>
+
         <div class="grid-fields">
           <div class="field">
-            <label for="lengthSelect">Länge</label>
-            <select id="lengthSelect">
-              <option value="short">Kurz: 2 bis 3 Sätze</option>
-              <option value="medium" selected>Mittel: kompakter Absatz</option>
-              <option value="detailed">Detailliert: strukturierte Stichpunkte</option>
+            <label for="templateSelect">Vorlage</label>
+            <select id="templateSelect">
+              <option>Standard-Zusammenfassung</option>
+              <option>Meeting-Protokoll</option>
+              <option>Management Briefing</option>
+              <option>Risikoanalyse</option>
+              <option>Projektstatus</option>
+              <option>Entscheidungsvorlage</option>
+              <option>To-do-Liste</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="audienceSelect">Zielgruppe</label>
+            <select id="audienceSelect">
+              <option>Allgemein</option>
+              <option>Management</option>
+              <option>Fachteam</option>
+              <option>Kunde</option>
+              <option>Technisch</option>
+              <option>Juristisch</option>
+              <option>Einfach verständlich</option>
             </select>
           </div>
 
@@ -135,6 +190,38 @@
           </div>
 
           <div class="field">
+            <label for="toneSelect">Ton / Stil</label>
+            <select id="toneSelect">
+              <option>Neutral</option>
+              <option>Prägnant</option>
+              <option>Formal</option>
+              <option>Beratend</option>
+              <option>Kritisch</option>
+              <option>Einfach erklärt</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="actionModeSelect">Handlungsorientierung</label>
+            <select id="actionModeSelect">
+              <option>Nur zusammenfassen</option>
+              <option>Empfehlungen ergänzen</option>
+              <option>Nächste Schritte ableiten</option>
+              <option>Entscheidung vorbereiten</option>
+              <option>Offene Punkte markieren</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="lengthSelect">Länge</label>
+            <select id="lengthSelect">
+              <option value="short">Kurz: 2 bis 3 Sätze</option>
+              <option value="medium" selected>Mittel: kompakter Absatz</option>
+              <option value="detailed">Detailliert: strukturierte Stichpunkte</option>
+            </select>
+          </div>
+
+          <div class="field">
             <label for="formatSelect">Ausgabeformat</label>
             <select id="formatSelect">
               <option>Fließtext</option>
@@ -152,6 +239,14 @@
         </div>
       </aside>
 
+      <section class="view-panel" aria-label="Arbeitsansicht">
+        <div class="view-tabs" role="tablist" aria-label="Quelle und Ergebnis anzeigen">
+          <button type="button" class="is-active" data-view-mode="source" role="tab" aria-selected="true">Quelle</button>
+          <button type="button" data-view-mode="result" role="tab" aria-selected="false">Ergebnis</button>
+          <button type="button" data-view-mode="split" role="tab" aria-selected="false">Geteilt</button>
+        </div>
+      </section>
+
       <section class="panel output-panel">
         <div class="panel-heading">
           <div>
@@ -166,7 +261,22 @@
           <button type="button" id="copyBtn">Kopieren</button>
           <button type="button" id="exportTxtBtn">Text speichern</button>
           <button type="button" id="exportMdBtn">Markdown speichern</button>
+          <button type="button" id="exportHtmlBtn">HTML speichern</button>
+          <button type="button" id="printPdfBtn">PDF drucken</button>
           <button type="button" id="resetBtn">Arbeitsbereich leeren</button>
+        </div>
+
+        <div class="history-panel" aria-label="Lokaler Verlauf">
+          <div class="history-heading">
+            <div>
+              <h3>Lokaler Verlauf</h3>
+              <p>Die letzten Zusammenfassungen bleiben nur in diesem Browser.</p>
+            </div>
+            <button type="button" id="clearHistoryBtn">Verlauf leeren</button>
+          </div>
+          <div class="history-list" id="historyList">
+            <p class="history-empty">Noch keine gespeicherte Zusammenfassung.</p>
+          </div>
         </div>
       </section>
 
@@ -200,6 +310,7 @@
               <div class="api-actions license-actions">
                 <button type="button" id="saveLicenseBtn">Lizenz speichern</button>
                 <button type="button" id="verifyLicenseBtn">Lizenz prüfen</button>
+                <button type="button" id="useDemoLicenseBtn">Demo-Lizenz</button>
               </div>
               <div class="key-feedback" id="licenseFeedback" role="status" aria-live="polite">Noch keine Lizenz gespeichert.</div>
             </div>
@@ -259,57 +370,155 @@
     </main>
   </div>
 
+  <aside class="quick-action-bar" aria-label="Schnellaktion">
+    <div>
+      <strong id="quickActionTitle">Bereit zur Zusammenfassung</strong>
+      <span id="quickActionMeta">0 Zeichen in der Quelle</span>
+    </div>
+    <button type="button" id="quickSummarizeBtn">Zusammenfassung erstellen</button>
+  </aside>
+
   <div class="modal-backdrop" id="helpModal">
     <section class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
       <div class="help-header">
         <div>
-          <p class="eyebrow">Hilfe</p>
-          <h2 id="helpTitle">Wichtige Hinweise</h2>
+          <p class="eyebrow">Bedienungsanleitung</p>
+          <h2 id="helpTitle">SMART Summary Assistant verwenden</h2>
         </div>
         <label class="modal-close" for="helpToggle" aria-label="Hilfe schließen">×</label>
       </div>
 
-      <div class="help-grid">
-        <article>
-          <h3>Dateiformate</h3>
-          <p>Unterstützt: TXT, MD, PDF, DOCX, RTF, HTML, CSV. Es wird nur Text extrahiert, nicht das Original-Layout. DOCX nutzt einen Browser-Parser und benötigt beim ersten Laden Internetzugriff.</p>
-        </article>
-        <article>
-          <h3>Dateiimport</h3>
-          <p>Der erkannte Text wird automatisch in das Quellenfeld übernommen und kann dort geprüft, gekürzt oder ergänzt werden. Lange Inhalte bleiben im Quellenfeld scrollbar; die Feldhöhe kann manuell angepasst werden.</p>
-        </article>
-        <article>
-          <h3>PDF und Office</h3>
-          <p>PDF funktioniert bei markierbarem Text. Gescannte PDFs, Bilder und Screenshots benötigen OCR. Google Docs und Apple Pages bitte als DOCX, PDF oder TXT exportieren.</p>
-        </article>
-        <article>
-          <h3>Textmenge</h3>
-          <p>Empfohlen sind bis ca. 100.000 Zeichen. Maximal verarbeitet die App 180.000 Zeichen; sehr große Texte können Qualität und Laufzeit beeinflussen.</p>
-        </article>
-        <article>
-          <h3>Datenschutz</h3>
-          <p>Inhalte werden zur Verarbeitung über den lokalen Proxy an Anthropic gesendet. API-Eingaben und -Ausgaben werden laut Anthropic nicht zum Training generativer Modelle verwendet, außer bei Feedback oder Opt-in.</p>
-        </article>
-        <article>
-          <h3>API-Key</h3>
-          <p>Der API-Key wird nur lokal im Browser gespeichert, wenn du die Speicherung aktivierst. Ohne gültigen Key wird keine KI-Anfrage gesendet.</p>
-        </article>
-        <article>
-          <h3>Lizenz</h3>
-          <p>Für den Verkauf über Stripe erhält der Nutzer einen Lizenzschlüssel. In der lokalen Demo kann SMART-DEMO-2026-LOCAL geprüft werden; produktiv sollte eine kleine Lizenz-API Stripe-Käufe und Lizenzstatus bestätigen.</p>
-        </article>
-        <article>
-          <h3>Windows und Mac</h3>
-          <p>Die App läuft im Browser auf Windows und macOS. Für KI-Anfragen muss der lokale Proxy per npm start laufen; eine reine GitHub-Pages-Version kann keinen Proxy ausführen.</p>
-        </article>
-        <article>
-          <h3>Ergebnisqualität</h3>
-          <p>Die Qualität hängt von Lesbarkeit, Struktur, Länge und Textqualität der Quelle ab. Saubere Überschriften, klare Absätze und kopierbarer Text verbessern die Ergebnisse.</p>
-        </article>
-        <article>
-          <h3>Ergebnis-Aktionen</h3>
-          <p>Kopieren legt die Zusammenfassung in die Zwischenablage. Text speichern erstellt eine einfache TXT-Datei. Markdown speichern erstellt eine strukturierte MD-Datei. Arbeitsbereich leeren entfernt Quelle, Ergebnis und Dateistatus; API-Key und Lizenz bleiben erhalten.</p>
-        </article>
+      <div class="help-manual">
+        <section class="manual-intro">
+          <h3>Zweck der App</h3>
+          <p>Der SMART Summary Assistant erstellt aus eingefügten Texten oder importierten Dateien strukturierte KI-Zusammenfassungen. Du steuerst dabei Länge, Sprache, Zielgruppe, Fokus, Ton, Handlungsorientierung und Ausgabeformat.</p>
+        </section>
+
+        <section class="manual-section">
+          <h3>Schnellstart</h3>
+          <ol class="manual-steps">
+            <li><strong>Zugriff einrichten:</strong> Lizenz aktivieren und einen Anthropic API-Key hinterlegen. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
+            <li><strong>Quelle erfassen:</strong> Text direkt einfügen oder eine Datei per Drag & Drop, Datei auswählen oder Demo laden übernehmen.</li>
+            <li><strong>Zusammenfassung steuern:</strong> Profil wählen oder die Parameter manuell einstellen.</li>
+            <li><strong>Erstellen:</strong> Zusammenfassung erstellen anklicken. Bei langen Texten kann die Verarbeitung etwas dauern.</li>
+            <li><strong>Ergebnis nutzen:</strong> Zusammenfassung prüfen, kopieren, als TXT, Markdown oder HTML speichern oder per Browser als PDF drucken.</li>
+          </ol>
+        </section>
+
+        <section class="manual-section">
+          <h3>Quelle erfassen</h3>
+          <p>Im Bereich Quelle kannst du Text direkt eingeben, einfügen oder aus Dateien übernehmen. Der importierte Text wird automatisch in das Quellenfeld eingefügt und kann vor der Zusammenfassung geprüft, gekürzt oder ergänzt werden.</p>
+          <ul class="manual-list">
+            <li><strong>Unterstützte Formate:</strong> TXT, MD, PDF, DOCX, RTF, HTML und CSV.</li>
+            <li><strong>PDF:</strong> Funktioniert bei markierbarem Text. Gescannte PDFs, Bilder und Screenshots benötigen vorher OCR.</li>
+            <li><strong>Office-Dateien:</strong> Google Docs und Apple Pages bitte als DOCX, PDF oder TXT exportieren.</li>
+            <li><strong>Layout:</strong> Die App extrahiert Text, nicht das originale Seitenlayout.</li>
+          </ul>
+        </section>
+
+        <section class="manual-section">
+          <h3>Quellenanalyse verstehen</h3>
+          <p>Die Werte unter dem Quellenfeld helfen einzuschätzen, ob der Text gut für eine KI-Zusammenfassung geeignet ist.</p>
+          <ul class="manual-list">
+            <li><strong>Zeichen:</strong> Verständliche Größenangabe für den eingegebenen Text.</li>
+            <li><strong>Token-Schätzung:</strong> Grober KI-Verarbeitungsumfang, näherungsweise Zeichen geteilt durch vier.</li>
+            <li><strong>Absätze:</strong> Zeigt, ob der Text ausreichend strukturiert ist.</li>
+            <li><strong>Erkannte Sprache und Struktur:</strong> Orientierung für Qualität und Lesbarkeit der Quelle.</li>
+          </ul>
+        </section>
+
+        <section class="manual-section">
+          <h3>Textmenge und technische Grenzen</h3>
+          <p>Empfohlen sind bis ca. 100.000 Zeichen. Maximal verarbeitet die App 180.000 Zeichen. Als grobe Orientierung entspricht das etwa 40 bis 55 Normseiten empfohlen und 70 bis 100 Normseiten maximal, je nach Formatierung, Schriftgröße und Textdichte.</p>
+          <p>Sehr große Quellen erhöhen Laufzeit, Kosten und Fehlerrisiko. Für besonders lange Dokumente ist es oft besser, kapitelweise zusammenzufassen und anschließend eine Gesamtsynthese zu erstellen.</p>
+        </section>
+
+        <section class="manual-section">
+          <h3>Zusammenfassung einstellen</h3>
+          <p>Alle Auswahlfelder werden in die Claude-Anweisung übernommen. Dadurch wird die Ausgabe auf Zweck, Publikum und spätere Nutzung zugeschnitten.</p>
+          <dl class="manual-terms">
+            <div><dt>Vorlage</dt><dd>Grundstruktur der Ausgabe, zum Beispiel Management Briefing, Risikoanalyse, Projektstatus oder To-do-Liste.</dd></div>
+            <div><dt>Zielgruppe</dt><dd>Legt fest, für wen die Zusammenfassung formuliert wird, etwa Management, Fachteam, Kunde, technisch oder juristisch.</dd></div>
+            <div><dt>Sprache</dt><dd>Bestimmt die Ausgabesprache unabhängig von der Quellsprache.</dd></div>
+            <div><dt>Fokus</dt><dd>Lenkt die Aufmerksamkeit auf Kernaussagen, Fakten, Risiken, Chancen, offene Fragen oder Handlungsempfehlungen.</dd></div>
+            <div><dt>Ton / Stil</dt><dd>Steuert die Ausdrucksweise, zum Beispiel neutral, prägnant, formal, beratend, kritisch oder einfach erklärt.</dd></div>
+            <div><dt>Handlungsorientierung</dt><dd>Bestimmt, ob nur zusammengefasst wird oder ob Empfehlungen, nächste Schritte, Entscheidungsgrundlagen oder offene Punkte ergänzt werden.</dd></div>
+            <div><dt>Länge</dt><dd>Wählt zwischen kurzer, mittlerer und detaillierter Zusammenfassung.</dd></div>
+            <div><dt>Ausgabeformat</dt><dd>Erzeugt Fließtext, Stichpunkte, Tabelle, Executive Summary oder Entscheidungsnotiz.</dd></div>
+          </dl>
+        </section>
+
+        <section class="manual-section">
+          <h3>Profile verwenden</h3>
+          <p>Profile speichern komplette Parameterkombinationen. Vordefinierte Profile können direkt gewählt werden; eigene Profile werden lokal im Browser gespeichert.</p>
+          <ol class="manual-steps compact">
+            <li>Profil aus der Liste auswählen. Die Werte werden automatisch gesetzt.</li>
+            <li>Alternativ Profil anwenden anklicken, um das gewählte Profil erneut auf die Felder zu übertragen.</li>
+            <li>Aktuelle Einstellungen speichern legt ein eigenes Profil mit den aktuellen Auswahlfeldern an.</li>
+            <li>Profil löschen entfernt nur eigene Profile. Vordefinierte Profile bleiben erhalten.</li>
+          </ol>
+        </section>
+
+        <section class="manual-section">
+          <h3>Ansichten und Arbeitsbereich</h3>
+          <p>Mit Quelle, Ergebnis und Geteilt wechselst du zwischen Eingabe, Ausgabe und paralleler Arbeitsansicht. Auf kleineren Bildschirmen startet die App in der Quellenansicht. Nach erfolgreicher Zusammenfassung wird automatisch das Ergebnis angezeigt.</p>
+          <p>Die Schnellaktionsleiste unten zeigt den aktuellen Status und startet die Zusammenfassung auch dann, wenn der Hauptbutton gerade nicht sichtbar ist.</p>
+        </section>
+
+        <section class="manual-section">
+          <h3>Ergebnis nutzen</h3>
+          <ul class="manual-list">
+            <li><strong>Kopieren:</strong> Legt die Zusammenfassung in die Zwischenablage.</li>
+            <li><strong>Text speichern:</strong> Exportiert eine reine TXT-Datei.</li>
+            <li><strong>Markdown speichern:</strong> Exportiert eine strukturierte MD-Datei.</li>
+            <li><strong>HTML speichern:</strong> Exportiert eine lokal nutzbare HTML-Datei.</li>
+            <li><strong>PDF drucken:</strong> Öffnet den Browser-Druckdialog für PDF-Ausgabe.</li>
+            <li><strong>Arbeitsbereich leeren:</strong> Entfernt Quelle, Ergebnis und Dateistatus. API-Key, Lizenz und Verlauf bleiben erhalten.</li>
+          </ul>
+        </section>
+
+        <section class="manual-section">
+          <h3>Lokaler Verlauf</h3>
+          <p>Die letzten Zusammenfassungen werden lokal im Browser gespeichert und können wieder geöffnet werden. Der Verlauf verlässt den Browser nicht und kann jederzeit über Verlauf leeren entfernt werden.</p>
+        </section>
+
+        <section class="manual-section">
+          <h3>Lizenz, API-Key und Datenschutz</h3>
+          <ul class="manual-list">
+            <li><strong>Lizenz:</strong> Für den Verkauf über Stripe erhält der Nutzer einen Lizenzschlüssel. Produktiv sollte eine Lizenz-API Stripe-Käufe und Lizenzstatus bestätigen.</li>
+            <li><strong>Demo-Lizenz:</strong> SMART-DEMO-2026-LOCAL kann lokal geprüft werden.</li>
+            <li><strong>API-Key:</strong> Der Schlüssel wird nur lokal im Browser gespeichert, wenn die Speicherung aktiviert ist.</li>
+            <li><strong>Datenverarbeitung:</strong> Inhalte werden über den lokalen Proxy an Anthropic gesendet. Ohne gültigen API-Key wird keine KI-Anfrage ausgeführt.</li>
+            <li><strong>Training:</strong> Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer bei Feedback oder ausdrücklichem Opt-in.</li>
+          </ul>
+        </section>
+
+        <section class="manual-section">
+          <h3>Technische Voraussetzungen</h3>
+          <p>Die App läuft im Browser auf Windows und macOS. Für KI-Anfragen muss der lokale Proxy über npm start laufen. Eine reine GitHub-Pages-Version kann keinen lokalen Proxy ausführen und ist daher nicht für echte KI-Anfragen geeignet.</p>
+        </section>
+
+        <section class="manual-section">
+          <h3>Qualität verbessern</h3>
+          <ul class="manual-list">
+            <li>Klare Überschriften, Absätze und kopierbarer Text verbessern die Ergebnisse.</li>
+            <li>Unwichtige Anhänge, Inhaltsverzeichnisse oder doppelte Textpassagen vorab entfernen.</li>
+            <li>Für Management-Ergebnisse Zielgruppe Management, Ton Prägnant und Ausgabeformat Executive Summary wählen.</li>
+            <li>Für Entscheidungen Handlungsorientierung Entscheidung vorbereiten und Ausgabeformat Entscheidungsnotiz wählen.</li>
+            <li>Bei sehr langen Dokumenten zuerst Teilzusammenfassungen erstellen und danach eine Gesamtsynthese erzeugen.</li>
+          </ul>
+        </section>
+
+        <section class="manual-section">
+          <h3>Häufige Probleme</h3>
+          <ul class="manual-list">
+            <li><strong>Keine Verbindung:</strong> Prüfen, ob der lokale Proxy läuft und der API-Key korrekt gespeichert ist.</li>
+            <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder besteht aus Bildern. Vorher OCR verwenden.</li>
+            <li><strong>Text zu groß:</strong> Quelle kürzen oder in Kapitel aufteilen. Maximal sind 180.000 Zeichen möglich.</li>
+            <li><strong>Ergebnis zu allgemein:</strong> Fokus, Zielgruppe, Vorlage und Handlungsorientierung konkreter einstellen.</li>
+            <li><strong>Profil fehlt:</strong> Eigene Profile sind browserlokal. In einem anderen Browser oder nach gelöschtem Speicher sind sie nicht verfügbar.</li>
+          </ul>
+        </section>
       </div>
     </section>
   </div>
