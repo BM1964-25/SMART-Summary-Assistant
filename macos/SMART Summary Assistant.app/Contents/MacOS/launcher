@@ -1,13 +1,7 @@
 #!/bin/zsh
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 BUNDLED_ROOT="$(cd "$(dirname "$0")/../Resources/App" && pwd)"
-
-if [ -f "${PROJECT_ROOT}/localProxyServer.js" ]; then
-  APP_ROOT="${PROJECT_ROOT}"
-else
-  APP_ROOT="${BUNDLED_ROOT}"
-fi
+APP_ROOT="${BUNDLED_ROOT}"
 PORT="8182"
 URL="http://127.0.0.1:${PORT}"
 NODE_BIN="/opt/homebrew/bin/node"
@@ -19,7 +13,7 @@ fi
 cd /tmp || exit 1
 
 if ! /usr/bin/curl --silent --fail "${URL}" >/dev/null 2>&1; then
-  /usr/bin/nohup $NODE_BIN "${APP_ROOT}/localProxyServer.js" >/tmp/smart-summary-assistant.log 2>&1 &
+  /usr/bin/env PORT="${PORT}" /usr/bin/nohup $NODE_BIN "${APP_ROOT}/localProxyServer.js" >/tmp/smart-summary-assistant.log 2>&1 &
   for attempt in {1..30}; do
     if /usr/bin/curl --silent --fail "${URL}" >/dev/null 2>&1; then
       break
