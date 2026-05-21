@@ -16,7 +16,7 @@ const STORAGE_KEY = "smart-summary-anthropic-key";
 const SESSION_KEY = "smart-summary-session-active";
 const HISTORY_KEY = "smart-summary-history";
 const PROFILE_KEY = "smart-summary-profiles";
-const MAX_HISTORY_ITEMS = 6;
+const MAX_HISTORY_ITEMS = 20;
 const DEFAULT_PROXY_URL = "/api/anthropic/messages";
 const DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514";
 const DEMO_LICENSE_KEY = "SMART-DEMO-2026-LOCAL";
@@ -160,7 +160,7 @@ const elements = {
   apiKey: document.querySelector("#apiKey"),
   rememberKey: document.querySelector("#rememberKey"),
   toggleKey: document.querySelector("#toggleKey"),
-  apiKeyCard: document.querySelector(".api-key-card"),
+  apiKeyCard: document.querySelector("#apiKeyCard"),
   apiKeyDetails: document.querySelector("#apiKeyDetails"),
   keyHint: document.querySelector("#keyHint"),
   keyFeedback: document.querySelector("#keyFeedback"),
@@ -194,10 +194,12 @@ const elements = {
   quickActionMeta: document.querySelector("#quickActionMeta"),
   summaryOutput: document.querySelector("#summaryOutput"),
   copyBtn: document.querySelector("#copyBtn"),
+  copyResultIconBtn: document.querySelector("#copyResultIconBtn"),
   exportMdBtn: document.querySelector("#exportMdBtn"),
   exportTxtBtn: document.querySelector("#exportTxtBtn"),
   exportHtmlBtn: document.querySelector("#exportHtmlBtn"),
   printPdfBtn: document.querySelector("#printPdfBtn"),
+  clearResultBtn: document.querySelector("#clearResultBtn"),
   resetBtn: document.querySelector("#resetBtn"),
   historyList: document.querySelector("#historyList"),
   clearHistoryBtn: document.querySelector("#clearHistoryBtn"),
@@ -259,10 +261,12 @@ function bindEvents() {
   elements.summarizeBtn.addEventListener("click", handleSummarize);
   elements.quickSummarizeBtn.addEventListener("click", handleSummarize);
   elements.copyBtn.addEventListener("click", copySummary);
+  elements.copyResultIconBtn.addEventListener("click", copySummary);
   elements.exportMdBtn.addEventListener("click", () => exportSummary("md"));
   elements.exportTxtBtn.addEventListener("click", () => exportSummary("txt"));
   elements.exportHtmlBtn.addEventListener("click", exportSummaryHtml);
   elements.printPdfBtn.addEventListener("click", printSummaryAsPdf);
+  elements.clearResultBtn.addEventListener("click", clearSummaryResult);
   elements.resetBtn.addEventListener("click", resetWorkspace);
   elements.historyList.addEventListener("click", handleHistoryClick);
   elements.clearHistoryBtn.addEventListener("click", clearHistory);
@@ -983,6 +987,7 @@ function renderLicenseComponent() {
 
   elements.licenseBadge.textContent = licenseState.active ? "Lizenz aktiv" : "Nicht aktiviert";
   elements.licenseBadge.classList.toggle("is-connected", licenseState.active);
+  setButtonLoading(elements.verifyLicenseBtn, licenseState.isBusy);
   elements.saveLicenseBtn.disabled = licenseState.isBusy;
   elements.verifyLicenseBtn.disabled = licenseState.isBusy || !elements.licenseKey.value.trim();
   elements.useDemoLicenseBtn.disabled = licenseState.isBusy;
@@ -1084,6 +1089,8 @@ function setButtonLoading(button, isLoading) {
 function setSummaryButtonsDisabled(isDisabled) {
   elements.summarizeBtn.disabled = isDisabled;
   elements.quickSummarizeBtn.disabled = isDisabled;
+  setButtonLoading(elements.summarizeBtn, isDisabled);
+  setButtonLoading(elements.quickSummarizeBtn, isDisabled);
 }
 
 function updateQuickAction(count = elements.sourceText.value.length) {
@@ -1184,6 +1191,11 @@ function resetWorkspace() {
   setStatus(apiKeyState.value ? "Bereit" : "API-Key fehlt", apiKeyState.value ? "ready" : "warn");
 }
 
+function clearSummaryResult() {
+  setSummaryOutput("Noch keine Zusammenfassung erstellt.", true);
+  setStatus("Ergebnis gelöscht", "ready");
+}
+
 function loadHistory() {
   try {
     const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
@@ -1206,10 +1218,15 @@ function saveSummaryToHistory(summary) {
     id: String(Date.now()),
     createdAt: new Date().toISOString(),
     summary: text,
+    source,
     sourcePreview: source.slice(0, 140),
     template: elements.templateSelect.value,
+    length: elements.lengthSelect.value,
     format: elements.formatSelect.value,
     language: elements.languageSelect.value,
+    focus: elements.focusSelect.value,
+    tone: elements.toneSelect.value,
+    actionMode: elements.actionModeSelect.value,
     audience: elements.audienceSelect.value
   };
 
@@ -1252,9 +1269,29 @@ function handleHistoryClick(event) {
   const item = loadHistory().find((entry) => entry.id === button.dataset.historyId);
   if (!item) return;
 
+  if (item.source) {
+    elements.sourceText.value = item.source;
+    elements.pdfStatus.textContent = "Quelle aus lokalem Verlauf geladen";
+    updateCharacterCount();
+  }
+
+  applyHistorySettings(item);
   setSummaryOutput(item.summary);
   setViewMode("result");
   setStatus("Verlauf geladen", "ready");
+}
+
+function applyHistorySettings(item) {
+  setSelectValue(elements.templateSelect, item.template);
+  setSelectValue(elements.lengthSelect, item.length);
+  setSelectValue(elements.languageSelect, item.language);
+  setSelectValue(elements.focusSelect, item.focus);
+  setSelectValue(elements.formatSelect, item.format);
+  setSelectValue(elements.audienceSelect, item.audience);
+  setSelectValue(elements.toneSelect, item.tone);
+  setSelectValue(elements.actionModeSelect, item.actionMode);
+  elements.profileSelect.value = "";
+  updateProfileActions();
 }
 
 function clearHistory() {

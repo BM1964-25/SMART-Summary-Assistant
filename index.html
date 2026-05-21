@@ -105,7 +105,7 @@
           <span id="pdfStatus">Keine Datei ausgewählt</span>
           <div class="drop-actions">
             <button type="button" class="file-select-button" id="fileSelectBtn">Datei auswählen</button>
-            <button type="button" class="demo-load-button" id="loadDemoBtn">Demo laden</button>
+            <button type="button" class="demo-load-button" id="loadDemoBtn">Beispiel laden</button>
           </div>
           <input id="pdfInput" type="file" accept=".txt,.md,.pdf,.docx,.rtf,.html,.csv,application/pdf,text/plain,text/markdown,text/html,text/csv,application/rtf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
         </div>
@@ -253,6 +253,23 @@
             <h2>Ergebnis</h2>
             <p>Die Zusammenfassung wird nach deinen gewählten Einstellungen erstellt.</p>
           </div>
+          <div class="output-heading-actions" aria-label="Ergebnis-Aktionen">
+            <button type="button" class="icon-button result-icon-button" id="copyResultIconBtn" aria-label="Ergebnis kopieren" title="Ergebnis kopieren">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="9" width="10" height="10" rx="2"></rect>
+                <path d="M5 15V7a2 2 0 0 1 2-2h8"></path>
+              </svg>
+            </button>
+            <button type="button" class="icon-button result-icon-button danger" id="clearResultBtn" aria-label="Nur Ergebnis löschen" title="Nur Ergebnis löschen">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h16"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+                <path d="M6 7l1 13h10l1-13"></path>
+                <path d="M9 7V4h6v3"></path>
+              </svg>
+            </button>
+          </div>
         </div>
         <div class="workspace-resizer">
           <div id="summaryOutput" class="is-placeholder">Noch keine Zusammenfassung erstellt.</div>
@@ -265,28 +282,31 @@
           <button type="button" id="printPdfBtn">PDF drucken</button>
           <button type="button" id="resetBtn">Arbeitsbereich leeren</button>
         </div>
+      </section>
 
-        <div class="history-panel" aria-label="Lokaler Verlauf">
-          <div class="history-heading">
-            <div>
-              <h3>Lokaler Verlauf</h3>
-              <p>Die letzten Zusammenfassungen bleiben nur in diesem Browser.</p>
-            </div>
-            <button type="button" id="clearHistoryBtn">Verlauf leeren</button>
+      <section class="panel history-panel" aria-label="Lokaler Verlauf">
+        <div class="history-heading">
+          <div>
+            <h2>Lokaler Verlauf</h2>
+            <p>Die letzten Zusammenfassungen bleiben nur in diesem Browser. Es werden maximal 20 Einträge angezeigt und gespeichert.</p>
           </div>
-          <div class="history-list" id="historyList">
-            <p class="history-empty">Noch keine gespeicherte Zusammenfassung.</p>
-          </div>
+          <button type="button" id="clearHistoryBtn">Verlauf leeren</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <p class="history-empty">Noch keine gespeicherte Zusammenfassung.</p>
         </div>
       </section>
 
-      <section class="panel api-panel">
-        <div class="panel-heading compact">
+      <details class="panel api-panel">
+        <summary class="panel-heading compact api-panel-toggle">
           <div>
             <h2>Zugriff, Lizenz & Datenschutz</h2>
             <p>Lizenz, Anthropic-Verbindung und Verarbeitungshinweise.</p>
           </div>
-        </div>
+          <span class="api-panel-summary">
+            <span class="chevron" aria-hidden="true">▾</span>
+          </span>
+        </summary>
 
         <details class="api-key-card license-card" aria-labelledby="licenseTitle">
           <summary class="api-key-toggle">
@@ -317,7 +337,7 @@
           </div>
         </details>
 
-        <details class="api-key-card" aria-labelledby="apiKeyTitle">
+        <details class="api-key-card" id="apiKeyCard" aria-labelledby="apiKeyTitle">
           <summary class="api-key-toggle" id="apiKeyToggle">
             <div>
               <h3 id="apiKeyTitle">API-Key verwalten</h3>
@@ -366,7 +386,7 @@
             </div>
           </div>
         </details>
-      </section>
+      </details>
     </main>
   </div>
 
@@ -398,7 +418,7 @@
           <h3>Schnellstart</h3>
           <ol class="manual-steps">
             <li><strong>Zugriff einrichten:</strong> Lizenz aktivieren und einen Anthropic API-Key hinterlegen. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
-            <li><strong>Quelle erfassen:</strong> Text direkt einfügen oder eine Datei per Drag & Drop, Datei auswählen oder Demo laden übernehmen.</li>
+            <li><strong>Quelle erfassen:</strong> Text direkt einfügen oder eine Datei per Drag & Drop, Datei auswählen oder Beispiel laden übernehmen.</li>
             <li><strong>Zusammenfassung steuern:</strong> Profil wählen oder die Parameter manuell einstellen.</li>
             <li><strong>Erstellen:</strong> Zusammenfassung erstellen anklicken. Bei langen Texten kann die Verarbeitung etwas dauern.</li>
             <li><strong>Ergebnis nutzen:</strong> Zusammenfassung prüfen, kopieren, als TXT, Markdown oder HTML speichern oder per Browser als PDF drucken.</li>
