@@ -1,26 +1,18 @@
 # SMART Summary Assistant
 
-SMART Summary Assistant ist eine lokale Browseranwendung für KI-gestützte Zusammenfassungen. Nutzer übernehmen Text aus Dokumenten, Berichten, E-Mails und Fachinhalten und erstellen daraus präzise Zusammenfassungen nach Länge, Sprache, Fokus und Ausgabeformat.
+SMART Summary Assistant ist eine browserbasierte Anwendung für KI-gestützte Zusammenfassungen. Nutzer übernehmen Text aus Dokumenten, Berichten, E-Mails und Fachinhalten und erstellen daraus präzise Zusammenfassungen nach Länge, Sprache, Zielgruppe, Fokus, Ton und Ausgabeformat.
 
-## Lokale Nutzung
+## Nutzung
 
-Für KI-Anfragen wird der mitgelieferte lokale Proxy empfohlen. Direkte Browser-Aufrufe an Anthropic werden häufig durch CORS blockiert; außerdem sollte der API-Key nicht direkt aus einer statischen Seite an Drittanbieter-Endpunkte gesendet werden.
+Die App läuft im Webbrowser und kann auf Windows, macOS und anderen modernen Systemen genutzt werden. Eine separate Desktop-Installation steht bei diesem Modell nicht im Vordergrund.
 
-```bash
-npm start
-```
+Für Testphase, Kauf und Lizenzprüfung ist ein persönlicher Nutzerzugriff vorgesehen. Der Login kann einfach per E-Mail/Magic Link erfolgen. Für KI-Funktionen kann ein eigener API-Key erforderlich sein.
 
-Danach im Browser öffnen:
+## Daten und Speicherung
 
-```text
-http://127.0.0.1:8172
-```
+Fachliche Inhalte wie Eingaben, Zusammenfassungen, Profile und Verlauf können in diesem Browser gespeichert werden. Eine automatische Cloud-Synchronisierung der App-Inhalte ist in Version 1 nicht vorgesehen.
 
-Die UI kann zwar direkt per `index.html` oder GitHub Pages geöffnet werden, Anthropic-Anfragen funktionieren dort aber nur mit einem erreichbaren Backend-Proxy.
-
-## Unterstützte Plattformen
-
-Die App läuft im Browser auf macOS und Windows. Empfohlen sind aktuelle Versionen von Chrome, Edge oder Safari. Für lokale KI-Anfragen muss Node.js verfügbar sein, damit `localProxyServer.js` gestartet werden kann.
+Über Export und Import können Daten gesichert oder auf ein anderes System übertragen werden. Andere Nutzer können nicht auf Inhalte zugreifen, die nur im Browser des jeweiligen Nutzers gespeichert sind.
 
 ## Dateiimport
 
@@ -34,61 +26,43 @@ Unterstützte Textimporte:
 - HTML
 - CSV
 
-Es wird nur Text übernommen, nicht das Original-Layout. Gescannte PDFs, Bilder und Screenshots benötigen OCR und sind in dieser Version nicht vorgesehen.
+Es wird Text übernommen, nicht das originale Seitenlayout. Gescannte PDFs, Bilder und Screenshots benötigen vorher OCR.
 
-## Anthropic API-Key
+## Zusammenfassungssteuerung
 
-Der API-Key wird in der App eingegeben. Optional kann er lokal im Browser per `localStorage` gespeichert werden. Der Key steht nicht im Quellcode.
+Die App unterstützt unterschiedliche Vorlagen, Längen, Sprachen, Zielgruppen, Fokusarten, Tonalitäten, Handlungsorientierungen und Ausgabeformate. Dadurch lassen sich unter anderem kompakte Fließtexte, strukturierte Stichpunkte, Executive Summaries, Entscheidungsnotizen und Tabellen erzeugen.
 
-Der lokale Proxy leitet Anfragen an Anthropic weiter:
+## Lizenzmodell
 
-```text
-/api/anthropic/messages
-```
+Vorgesehenes Lizenzmodell:
 
-Die Anthropic-Kommunikation ist in `anthropicClient.js` gekapselt.
+- Jahreslizenz mit 12 Monaten Laufzeit
+- automatische Verlängerung um weitere 12 Monate
+- Kündigungsfrist 1 Monat vor Ablauf
+- sichere Online-Zahlung
+- optionale 7-Tage-Testphase mit vollem Funktionsumfang
+- pro Lizenz ein Nutzerzugriff
+- mehrere Lizenzen derselben App können gekauft werden
+- in Version 1: ein Checkout für eine App
+- mehrere unterschiedliche Apps in einem gemeinsamen Checkout können später ergänzt werden
 
-## Datenschutz und API-Nutzung
-
-Zusammenzufassende Inhalte werden zur Verarbeitung an Anthropic übermittelt. Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer Nutzer übermitteln Inhalte ausdrücklich als Feedback oder stimmen einer Nutzung zur Modellverbesserung zu.
-
-Sensible oder personenbezogene Daten sollten nur verarbeitet werden, wenn dies fachlich, vertraglich und rechtlich zulässig ist.
-
-## Lizenzierung und Verkauf über Stripe
-
-Die App enthält eine Lizenzschlüssel-UI und ein gekapseltes `licenseClient.js`.
-
-Vorgesehener Produktionsablauf:
-
-1. Nutzer kauft über Stripe Checkout.
-2. Stripe Webhook ruft ein kleines Lizenz-Backend auf.
-3. Das Backend erzeugt einen Lizenzschlüssel.
-4. Der Nutzer erhält den Lizenzschlüssel per E-Mail oder Kundenportal.
-5. Der Nutzer gibt den Lizenzschlüssel in SMART Summary Assistant ein.
-6. Die App prüft den Schlüssel über eine Lizenz-API.
-
-Wichtig: Stripe-Secret-Keys und Lizenzsignierung dürfen niemals in den Browser. Für Produktion braucht es eine kleine serverseitige Lizenz-API, z. B.:
-
-```text
-POST /api/license/verify
-```
-
-Lokaler Demo-Schlüssel:
+Demo-Lizenz für Tests:
 
 ```text
 SMART-DEMO-2026-LOCAL
 ```
 
-## GitHub Pages
+## Datenschutz und KI-Nutzung
 
-GitHub Pages kann die statische UI hosten. GitHub Pages kann jedoch keinen Node-Proxy ausführen. Für produktive Web-Nutzung muss der Anthropic-Proxy separat deployed werden.
+Zusammenzufassende Inhalte werden für die KI-Funktion an den KI-Anbieter übermittelt. Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer Nutzer übermitteln Inhalte ausdrücklich als Feedback oder stimmen einer Nutzung zur Modellverbesserung zu.
 
-## Mögliche spätere Erweiterungen
+Sensible oder personenbezogene Daten sollten nur verarbeitet werden, wenn dies fachlich, vertraglich und rechtlich zulässig ist.
 
-- OCR für gescannte PDFs und Bilder.
-- Vollständig lokales PDF.js und Mammoth statt CDN.
-- Signierte Offline-Lizenzschlüssel.
-- Stripe Customer Portal.
-- Lizenz-Backend mit Webhooks, Sperrlisten und Aktivierungslimits.
-- Rendern von Markdown-Ergebnissen als formatierte Ausgabe.
-- Export als PDF oder DOCX.
+## Spätere Erweiterungen
+
+- OCR für gescannte PDFs und Bilder
+- Export als PDF oder DOCX
+- Import und Export für Profile und Verlauf
+- Erweiterte Team- und Mehrlizenz-Verwaltung
+- Gemeinsamer Checkout für mehrere Apps
+- Serverseitige Synchronisierung von App-Inhalten, falls später gewünscht

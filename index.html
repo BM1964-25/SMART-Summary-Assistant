@@ -13,9 +13,9 @@
       <div class="brand-block">
         <img class="app-icon" src="assets/smart-summary-icon.png" alt="" aria-hidden="true">
         <div>
-          <p class="eyebrow">Lokale KI-Arbeitsoberfläche</p>
+          <p class="eyebrow">Browserbasierte KI-Arbeitsoberfläche</p>
           <h1>SMART Summary Assistant</h1>
-          <p class="lead">KI-gestützte Zusammenfassungen für maximale Effizienz: Strukturierte Erkenntnisse aus komplexen Dokumenten und Fachinhalten – schnell, präzise und lokal.</p>
+          <p class="lead">KI-gestützte Zusammenfassungen für maximale Effizienz: Strukturierte Erkenntnisse aus komplexen Dokumenten und Fachinhalten – schnell, präzise und browserbasiert.</p>
         </div>
       </div>
       <div class="header-actions">
@@ -66,12 +66,12 @@
 
       <section class="panel input-panel">
         <div class="panel-heading">
-          <div>
+          <div class="source-title-row">
             <h2>Quelle</h2>
-            <p class="source-heading-copy">Text direkt eingeben oder aus einer Datei übernehmen.</p>
-          </div>
-          <div class="source-metrics">
             <span class="counter" id="charCount">0 Zeichen</span>
+          </div>
+          <div class="source-description-row">
+            <p class="source-heading-copy">Text direkt eingeben oder aus einer Datei übernehmen.</p>
             <span class="quality-badge" id="textQuality">Textqualität: noch keine Quelle</span>
           </div>
         </div>
@@ -324,7 +324,7 @@
             <div class="field api-field">
               <label for="licenseKey">Lizenzschlüssel</label>
               <input id="licenseKey" type="text" autocomplete="off" placeholder="SMART-XXXX-XXXX-XXXX">
-              <p class="field-help">Nach dem Kauf über Stripe wird dieser Schlüssel hier hinterlegt. Produktiv erfolgt die Prüfung über eine Lizenz-API.</p>
+              <p class="field-help">Nach dem Kauf oder Start der Testphase wird dein persönlicher Lizenzschlüssel hier hinterlegt und sicher geprüft.</p>
             </div>
             <div class="api-action-row license-action-row">
               <div class="api-actions license-actions">
@@ -341,7 +341,7 @@
           <summary class="api-key-toggle" id="apiKeyToggle">
             <div>
               <h3 id="apiKeyTitle">API-Key verwalten</h3>
-              <p>Schlüssel lokal verwalten und Verbindung testen.</p>
+              <p>Schlüssel im Browser verwalten und Verbindung testen.</p>
             </div>
             <span class="api-key-summary">
               <span class="connection-badge" id="connectionBadge">Nicht verbunden</span>
@@ -366,7 +366,7 @@
 
             <label class="check-row">
               <input id="rememberKey" type="checkbox">
-              <span>API-Key lokal im Browser speichern</span>
+              <span>API-Key in diesem Browser speichern</span>
             </label>
 
             <div class="api-action-row">
@@ -382,12 +382,34 @@
 
             <div class="privacy-note">
               <strong>Datenschutz-Hinweis</strong>
-              <p>Der API-Key wird nur lokal in diesem Browser gespeichert, sofern du die Speicherung aktivierst. Inhalte werden zur Zusammenfassung über den lokalen Proxy an Anthropic übertragen. Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer du übermittelst Inhalte ausdrücklich als Feedback oder stimmst einer Nutzung zur Modellverbesserung zu. Verarbeite vertrauliche oder personenbezogene Daten nur, wenn dies fachlich und rechtlich zulässig ist.</p>
+              <p>Der API-Key wird nur in diesem Browser gespeichert, sofern du die Speicherung aktivierst. Inhalte werden für die KI-Zusammenfassung an Anthropic übertragen. Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer du übermittelst Inhalte ausdrücklich als Feedback oder stimmst einer Nutzung zur Modellverbesserung zu. Verarbeite vertrauliche oder personenbezogene Daten nur, wenn dies fachlich und rechtlich zulässig ist.</p>
             </div>
           </div>
         </details>
       </details>
     </main>
+
+    <footer class="app-footer">
+      <div class="footer-brand">
+        <img class="footer-icon" src="assets/smart-summary-icon.png" alt="" aria-hidden="true">
+        <div>
+          <strong>SMART Summary Assistant</strong>
+          <p>Strukturierte KI-Zusammenfassungen für Dokumente, Entscheidungen und professionelle Arbeitsabläufe.</p>
+        </div>
+      </div>
+      <div class="footer-legal">
+        <p>© 2026 SmartBuilt-AI · Powered by BuiltSmart Hub</p>
+        <nav aria-label="Rechtliche Links">
+          <a href="https://www.built-smart-hub.com/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
+          <span aria-hidden="true">|</span>
+          <a href="https://www.built-smart-hub.com/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
+          <span aria-hidden="true">|</span>
+          <a href="https://www.built-smart-hub.com/agb" target="_blank" rel="noopener noreferrer">AGB</a>
+          <span aria-hidden="true">|</span>
+          <a href="https://www.built-smart-hub.com/widerrufsbelehrung" target="_blank" rel="noopener noreferrer">Widerrufsbelehrung</a>
+        </nav>
+      </div>
+    </footer>
   </div>
 
   <aside class="quick-action-bar" aria-label="Schnellaktion">
@@ -417,7 +439,7 @@
         <section class="manual-section">
           <h3>Schnellstart</h3>
           <ol class="manual-steps">
-            <li><strong>Zugriff einrichten:</strong> Lizenz aktivieren und einen Anthropic API-Key hinterlegen. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
+            <li><strong>Zugriff einrichten:</strong> Lizenz aktivieren und bei Bedarf einen Anthropic API-Key hinterlegen. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
             <li><strong>Quelle erfassen:</strong> Text direkt einfügen oder eine Datei per Drag & Drop, Datei auswählen oder Beispiel laden übernehmen.</li>
             <li><strong>Zusammenfassung steuern:</strong> Profil wählen oder die Parameter manuell einstellen.</li>
             <li><strong>Erstellen:</strong> Zusammenfassung erstellen anklicken. Bei langen Texten kann die Verarbeitung etwas dauern.</li>
@@ -470,7 +492,7 @@
 
         <section class="manual-section">
           <h3>Profile verwenden</h3>
-          <p>Profile speichern komplette Parameterkombinationen. Vordefinierte Profile können direkt gewählt werden; eigene Profile werden lokal im Browser gespeichert.</p>
+          <p>Profile speichern komplette Parameterkombinationen. Vordefinierte Profile können direkt gewählt werden; eigene Profile werden in diesem Browser gespeichert.</p>
           <ol class="manual-steps compact">
             <li>Profil aus der Liste auswählen. Die Werte werden automatisch gesetzt.</li>
             <li>Alternativ Profil anwenden anklicken, um das gewählte Profil erneut auf die Felder zu übertragen.</li>
@@ -491,7 +513,7 @@
             <li><strong>Kopieren:</strong> Legt die Zusammenfassung in die Zwischenablage.</li>
             <li><strong>Text speichern:</strong> Exportiert eine reine TXT-Datei.</li>
             <li><strong>Markdown speichern:</strong> Exportiert eine strukturierte MD-Datei.</li>
-            <li><strong>HTML speichern:</strong> Exportiert eine lokal nutzbare HTML-Datei.</li>
+            <li><strong>HTML speichern:</strong> Exportiert eine HTML-Datei zur weiteren Nutzung oder Archivierung.</li>
             <li><strong>PDF drucken:</strong> Öffnet den Browser-Druckdialog für PDF-Ausgabe.</li>
             <li><strong>Arbeitsbereich leeren:</strong> Entfernt Quelle, Ergebnis und Dateistatus. API-Key, Lizenz und Verlauf bleiben erhalten.</li>
           </ul>
@@ -499,23 +521,25 @@
 
         <section class="manual-section">
           <h3>Lokaler Verlauf</h3>
-          <p>Die letzten Zusammenfassungen werden lokal im Browser gespeichert und können wieder geöffnet werden. Der Verlauf verlässt den Browser nicht und kann jederzeit über Verlauf leeren entfernt werden.</p>
+          <p>Die letzten Zusammenfassungen werden in diesem Browser gespeichert und können wieder geöffnet werden. Es werden maximal 20 Einträge angezeigt und gespeichert. Der Verlauf wird nicht automatisch mit einer Cloud synchronisiert und kann jederzeit über Verlauf leeren entfernt werden.</p>
         </section>
 
         <section class="manual-section">
-          <h3>Lizenz, API-Key und Datenschutz</h3>
+          <h3>Nutzerzugriff, Lizenz und Datenschutz</h3>
           <ul class="manual-list">
-            <li><strong>Lizenz:</strong> Für den Verkauf über Stripe erhält der Nutzer einen Lizenzschlüssel. Produktiv sollte eine Lizenz-API Stripe-Käufe und Lizenzstatus bestätigen.</li>
-            <li><strong>Demo-Lizenz:</strong> SMART-DEMO-2026-LOCAL kann lokal geprüft werden.</li>
-            <li><strong>API-Key:</strong> Der Schlüssel wird nur lokal im Browser gespeichert, wenn die Speicherung aktiviert ist.</li>
-            <li><strong>Datenverarbeitung:</strong> Inhalte werden über den lokalen Proxy an Anthropic gesendet. Ohne gültigen API-Key wird keine KI-Anfrage ausgeführt.</li>
+            <li><strong>Persönlicher Zugriff:</strong> Für Testphase, Kauf und Lizenzprüfung ist ein eigener Nutzerzugriff vorgesehen. Der Login kann einfach per E-Mail/Magic Link erfolgen.</li>
+            <li><strong>Lizenzmodell:</strong> Eine Jahreslizenz läuft 12 Monate, verlängert sich automatisch um weitere 12 Monate und kann mit einer Frist von 1 Monat vor Ablauf gekündigt werden.</li>
+            <li><strong>Testphase:</strong> Optional ist eine 7-Tage-Testphase mit vollem Funktionsumfang vorgesehen. Pro Lizenz ist ein Nutzerzugriff enthalten; mehrere Lizenzen bedeuten getrennte Nutzerzugriffe.</li>
+            <li><strong>Demo-Lizenz:</strong> SMART-DEMO-2026-LOCAL kann für Tests verwendet werden.</li>
+            <li><strong>API-Key:</strong> Für KI-Funktionen kann ein eigener API-Key erforderlich sein. Der Schlüssel wird nur in diesem Browser gespeichert, wenn die Speicherung aktiviert ist.</li>
+            <li><strong>Datenverarbeitung:</strong> Inhalte werden für die KI-Zusammenfassung an Anthropic gesendet. Ohne gültige Verbindung wird keine KI-Anfrage ausgeführt.</li>
             <li><strong>Training:</strong> Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer bei Feedback oder ausdrücklichem Opt-in.</li>
           </ul>
         </section>
 
         <section class="manual-section">
           <h3>Technische Voraussetzungen</h3>
-          <p>Die App läuft im Browser auf Windows und macOS. Für KI-Anfragen muss der lokale Proxy über npm start laufen. Eine reine GitHub-Pages-Version kann keinen lokalen Proxy ausführen und ist daher nicht für echte KI-Anfragen geeignet.</p>
+          <p>Die App läuft browserbasiert und kann auf Windows, macOS und anderen modernen Systemen genutzt werden. Deine fachlichen Inhalte können in diesem Browser gespeichert werden. Eine automatische Cloud-Synchronisierung der App-Inhalte ist in Version 1 nicht vorgesehen. Über Export und Import kannst du Daten sichern oder auf ein anderes System übertragen.</p>
         </section>
 
         <section class="manual-section">
@@ -532,11 +556,11 @@
         <section class="manual-section">
           <h3>Häufige Probleme</h3>
           <ul class="manual-list">
-            <li><strong>Keine Verbindung:</strong> Prüfen, ob der lokale Proxy läuft und der API-Key korrekt gespeichert ist.</li>
+            <li><strong>Keine Verbindung:</strong> Prüfen, ob der API-Key korrekt gespeichert ist und die Internetverbindung funktioniert.</li>
             <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder besteht aus Bildern. Vorher OCR verwenden.</li>
             <li><strong>Text zu groß:</strong> Quelle kürzen oder in Kapitel aufteilen. Maximal sind 180.000 Zeichen möglich.</li>
             <li><strong>Ergebnis zu allgemein:</strong> Fokus, Zielgruppe, Vorlage und Handlungsorientierung konkreter einstellen.</li>
-            <li><strong>Profil fehlt:</strong> Eigene Profile sind browserlokal. In einem anderen Browser oder nach gelöschtem Speicher sind sie nicht verfügbar.</li>
+            <li><strong>Profil fehlt:</strong> Eigene Profile werden in diesem Browser gespeichert. In einem anderen Browser oder nach gelöschtem Speicher sind sie nicht verfügbar.</li>
           </ul>
         </section>
       </div>

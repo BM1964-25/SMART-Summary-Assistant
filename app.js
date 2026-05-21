@@ -317,7 +317,7 @@ function bindEvents() {
   });
   elements.rememberKey.addEventListener("change", () => {
     persistSettings();
-    setKeyFeedback(elements.rememberKey.checked ? "Lokale Speicherung aktiviert." : "Lokale Speicherung deaktiviert.", "info");
+    setKeyFeedback(elements.rememberKey.checked ? "Speicherung in diesem Browser aktiviert." : "Speicherung in diesem Browser deaktiviert.", "info");
   });
 }
 
@@ -391,7 +391,7 @@ function handleSaveKey() {
   sessionStorage.removeItem(SESSION_KEY);
   persistSettings();
   renderApiKeyComponent();
-  setKeyFeedback(elements.rememberKey.checked ? "API-Key lokal gespeichert." : "API-Key für diese Sitzung übernommen.", "success");
+  setKeyFeedback(elements.rememberKey.checked ? "API-Key in diesem Browser gespeichert." : "API-Key für diese Sitzung übernommen.", "success");
   setStatus("Bereit", "ready");
 }
 
@@ -1061,14 +1061,14 @@ function getApiFeedbackMessage(error) {
 
 function getApiRecoveryHint(error) {
   if (error?.code === "INVALID_API_KEY") {
-    return "Hinweis: Der lokale Proxy funktioniert. Ersetze den API-Key im Einstellungsbereich und klicke danach auf Speichern und Verbindung überprüfen.";
+    return "Hinweis: Die Verbindung zur App funktioniert. Ersetze den API-Key im Einstellungsbereich und klicke danach auf Speichern und Verbindung überprüfen.";
   }
 
   if (error?.code === "PERMISSION_DENIED") {
     return "Hinweis: Prüfe im Anthropic-Konto, ob dein Key Zugriff auf Claude Sonnet 4 hat.";
   }
 
-  return "Hinweis: Prüfe lokalen Proxy, Internetverbindung, API-Key und den gewählten Anthropic-Modellzugriff.";
+  return "Hinweis: Prüfe Internetverbindung, API-Key und den gewählten Anthropic-Modellzugriff.";
 }
 
 function setApiBusy(isBusy, action = "", message = "") {
@@ -1249,20 +1249,33 @@ function renderHistory() {
     const dateLabel = Number.isNaN(date.getTime())
       ? "Unbekanntes Datum"
       : date.toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" });
+    const meta = [
+      item.template || "Zusammenfassung",
+      item.format || "Format offen",
+      item.language || "Sprache offen",
+      item.audience || "Zielgruppe offen"
+    ].join(" · ");
     return [
       `<article class="history-item">`,
-      `<div>`,
-      `<strong>${escapeHtml(item.template || "Zusammenfassung")}</strong>`,
-      `<span>${escapeHtml(dateLabel)} - ${escapeHtml(item.format || "Format offen")} - ${escapeHtml(item.language || "Sprache offen")} - ${escapeHtml(item.audience || "Zielgruppe offen")}</span>`,
+      `<time datetime="${escapeHtml(item.createdAt || "")}">${escapeHtml(dateLabel)}</time>`,
+      `<strong>${escapeHtml(meta)}</strong>`,
       `<p>${escapeHtml(item.sourcePreview || "Keine Quellenvorschau gespeichert.")}</p>`,
-      `</div>`,
+      `<div class="history-item-actions">`,
       `<button type="button" data-history-id="${escapeHtml(item.id)}">Laden</button>`,
+      `<button type="button" class="danger" data-history-delete-id="${escapeHtml(item.id)}">Löschen</button>`,
+      `</div>`,
       `</article>`
     ].join("");
   }).join("");
 }
 
 function handleHistoryClick(event) {
+  const deleteButton = event.target.closest("[data-history-delete-id]");
+  if (deleteButton) {
+    deleteHistoryItem(deleteButton.dataset.historyDeleteId);
+    return;
+  }
+
   const button = event.target.closest("[data-history-id]");
   if (!button) return;
 
@@ -1271,7 +1284,7 @@ function handleHistoryClick(event) {
 
   if (item.source) {
     elements.sourceText.value = item.source;
-    elements.pdfStatus.textContent = "Quelle aus lokalem Verlauf geladen";
+    elements.pdfStatus.textContent = "Quelle aus Verlauf geladen";
     updateCharacterCount();
   }
 
@@ -1294,10 +1307,20 @@ function applyHistorySettings(item) {
   updateProfileActions();
 }
 
+function deleteHistoryItem(id) {
+  const history = loadHistory();
+  const nextHistory = history.filter((entry) => entry.id !== id);
+  if (nextHistory.length === history.length) return;
+
+  saveHistory(nextHistory);
+  renderHistory();
+  setStatus("Verlaufseintrag gelöscht", "ready");
+}
+
 function clearHistory() {
   const history = loadHistory();
   if (!history.length) return;
-  if (!window.confirm("Lokalen Verlauf wirklich leeren? Die gespeicherten Zusammenfassungen werden aus diesem Browser entfernt.")) return;
+  if (!window.confirm("Verlauf wirklich leeren? Die gespeicherten Zusammenfassungen werden aus diesem Browser entfernt.")) return;
 
   localStorage.removeItem(HISTORY_KEY);
   renderHistory();

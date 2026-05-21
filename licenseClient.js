@@ -58,7 +58,7 @@ export async function verifyLicenseKey(key, endpoint = DEFAULT_LICENSE_ENDPOINT)
     };
   } catch (error) {
     if (error.code === "LICENSE_INVALID") throw error;
-    throw createLicenseError("Lizenz-API nicht erreichbar. Bitte später erneut prüfen.");
+    throw createLicenseError("Lizenzprüfung nicht erreichbar. Bitte später erneut prüfen.");
   }
 }
 
@@ -80,7 +80,7 @@ function verifyOfflineDemoLicense(key) {
     };
   }
 
-  throw createLicenseError("Lizenz lokal nicht gültig. Für produktive Verkäufe wird die Lizenz über die Lizenz-API geprüft.");
+  throw createLicenseError("Lizenz nicht gültig. Bitte prüfe den Schlüssel oder verwende deinen persönlichen Nutzerzugriff.");
 }
 
 function createLicenseError(message) {
