@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const PORT = Number(process.env.PORT || 8172);
+const PORT = Number(process.env.PORT || 8182);
 const HOST = "127.0.0.1";
 const ROOT = fileURLToPath(new URL(".", import.meta.url));
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
@@ -22,6 +22,11 @@ const server = http.createServer(async (request, response) => {
 
     if (request.method === "POST" && url.pathname === "/api/anthropic/messages") {
       await proxyAnthropicRequest(request, response);
+      return;
+    }
+
+    if (request.method === "OPTIONS" && url.pathname.startsWith("/api/")) {
+      sendOptions(response);
       return;
     }
 
@@ -62,7 +67,7 @@ async function proxyAnthropicRequest(request, response) {
   const payload = await upstream.text();
   response.writeHead(upstream.status, {
     "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
-    "Access-Control-Allow-Origin": `http://${HOST}:${PORT}`
+    "Access-Control-Allow-Origin": "*"
   });
   response.end(payload);
 }
@@ -98,7 +103,19 @@ function readRequestBody(request) {
   });
 }
 
+function sendOptions(response) {
+  response.writeHead(204, {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, X-API-Key"
+  });
+  response.end();
+}
+
 function sendJson(response, status, payload) {
-  response.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  response.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*"
+  });
   response.end(JSON.stringify(payload));
 }

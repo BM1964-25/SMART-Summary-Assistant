@@ -31,36 +31,23 @@
 
     <main class="layout">
       <section class="workflow-panel" aria-label="Arbeitsablauf">
+        <p class="workflow-intro">Verwandle umfangreiche Dokumente in klare Zusammenfassungen, Entscheidungsgrundlagen und nächste Schritte.</p>
+
         <div class="workflow-step">
-          <span class="step-number">1</span>
-          <div>
-            <strong>Zugriff einrichten</strong>
-            <span>API-Key einmalig hinterlegen</span>
-          </div>
+          <span class="step-number">01</span>
+          <strong>KI-Zugang einrichten</strong>
         </div>
-        <span class="workflow-arrow" aria-hidden="true">→</span>
         <div class="workflow-step">
-          <span class="step-number">2</span>
-          <div>
-            <strong>Quelle erfassen</strong>
-            <span>Text einfügen oder PDF auslesen</span>
-          </div>
+          <span class="step-number">02</span>
+          <strong>Quelle erfassen</strong>
         </div>
-        <span class="workflow-arrow" aria-hidden="true">→</span>
         <div class="workflow-step">
-          <span class="step-number">3</span>
-          <div>
-            <strong>Zusammenfassung steuern</strong>
-            <span>Länge, Sprache, Fokus und Format wählen</span>
-          </div>
+          <span class="step-number">03</span>
+          <strong>Zusammenfassung steuern</strong>
         </div>
-        <span class="workflow-arrow" aria-hidden="true">→</span>
         <div class="workflow-step">
-          <span class="step-number">4</span>
-          <div>
-            <strong>Ergebnis nutzen</strong>
-            <span>Kopieren oder exportieren</span>
-          </div>
+          <span class="step-number">04</span>
+          <strong>Ergebnis nutzen</strong>
         </div>
       </section>
 
@@ -253,7 +240,10 @@
             <h2>Ergebnis</h2>
             <p>Die Zusammenfassung wird nach deinen gewählten Einstellungen erstellt.</p>
           </div>
-          <div class="output-heading-actions" aria-label="Ergebnis-Aktionen">
+        </div>
+        <div class="workspace-resizer output-resizer">
+          <div id="summaryOutput" class="is-placeholder">Noch keine Zusammenfassung erstellt.</div>
+          <div class="output-field-actions" aria-label="Ergebnis-Aktionen">
             <button type="button" class="icon-button result-icon-button" id="copyResultIconBtn" aria-label="Ergebnis kopieren" title="Ergebnis kopieren">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <rect x="9" y="9" width="10" height="10" rx="2"></rect>
@@ -270,9 +260,6 @@
               </svg>
             </button>
           </div>
-        </div>
-        <div class="workspace-resizer">
-          <div id="summaryOutput" class="is-placeholder">Noch keine Zusammenfassung erstellt.</div>
         </div>
         <div class="toolbar result-actions">
           <button type="button" id="copyBtn">Kopieren</button>
@@ -412,14 +399,6 @@
     </footer>
   </div>
 
-  <aside class="quick-action-bar" aria-label="Schnellaktion">
-    <div>
-      <strong id="quickActionTitle">Bereit zur Zusammenfassung</strong>
-      <span id="quickActionMeta">0 Zeichen in der Quelle</span>
-    </div>
-    <button type="button" id="quickSummarizeBtn">Zusammenfassung erstellen</button>
-  </aside>
-
   <div class="modal-backdrop" id="helpModal">
     <section class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
       <div class="help-header">
@@ -452,7 +431,7 @@
           <p>Im Bereich Quelle kannst du Text direkt eingeben, einfügen oder aus Dateien übernehmen. Der importierte Text wird automatisch in das Quellenfeld eingefügt und kann vor der Zusammenfassung geprüft, gekürzt oder ergänzt werden.</p>
           <ul class="manual-list">
             <li><strong>Unterstützte Formate:</strong> TXT, MD, PDF, DOCX, RTF, HTML und CSV.</li>
-            <li><strong>PDF:</strong> Funktioniert bei markierbarem Text. Gescannte PDFs, Bilder und Screenshots benötigen vorher OCR.</li>
+            <li><strong>PDF:</strong> Markierbarer Text wird direkt im Browser ausgelesen. Wenn kein auslesbarer Text erkannt wird, kann die Zusammenfassung über die visuelle PDF-Analyse von Claude erstellt werden.</li>
             <li><strong>Office-Dateien:</strong> Google Docs und Apple Pages bitte als DOCX, PDF oder TXT exportieren.</li>
             <li><strong>Layout:</strong> Die App extrahiert Text, nicht das originale Seitenlayout.</li>
           </ul>
@@ -471,8 +450,21 @@
 
         <section class="manual-section">
           <h3>Textmenge und technische Grenzen</h3>
-          <p>Empfohlen sind bis ca. 100.000 Zeichen. Maximal verarbeitet die App 180.000 Zeichen. Als grobe Orientierung entspricht das etwa 40 bis 55 Normseiten empfohlen und 70 bis 100 Normseiten maximal, je nach Formatierung, Schriftgröße und Textdichte.</p>
-          <p>Sehr große Quellen erhöhen Laufzeit, Kosten und Fehlerrisiko. Für besonders lange Dokumente ist es oft besser, kapitelweise zusammenzufassen und anschließend eine Gesamtsynthese zu erstellen.</p>
+          <p>Für hochprofessionelle Ergebnisse sollte die App nicht am technischen Maximum betrieben werden. Entscheidend sind Textqualität, Struktur, gewünschte Detailtiefe und Ausgabeformat.</p>
+          <dl class="manual-terms">
+            <div><dt>Empfohlener Qualitätsbereich</dt><dd>Ca. 60.000 bis 100.000 Zeichen, etwa 15.000 bis 25.000 Token, ca. 9.000 bis 16.000 Wörter oder ungefähr 30 bis 55 DIN-A4-Seiten.</dd></div>
+            <div><dt>Technische Maximalgrenze</dt><dd>Bis 180.000 Zeichen, etwa 45.000 Token, ca. 27.000 bis 30.000 Wörter oder ungefähr 70 bis 100 DIN-A4-Seiten.</dd></div>
+          </dl>
+          <p>Bis ca. 60.000 Zeichen arbeitet die App besonders stabil und präzise. Bis ca. 100.000 Zeichen sind professionelle Ergebnisse gut erreichbar, wenn das Dokument sauber gegliedert ist. Bei längeren Quellen empfiehlt sich eine kapitelweise Zusammenfassung mit anschließender Gesamtsynthese.</p>
+          <p>Sehr große Quellen erhöhen Laufzeit, Kosten und Fehlerrisiko. Die Seitenangaben sind Richtwerte, da Schriftgröße, Rand, Zeilenabstand, Tabellen und Textdichte stark variieren.</p>
+          <h4>Gesamtübersicht aus mehreren Teilzusammenfassungen erstellen</h4>
+          <ol class="manual-steps compact">
+            <li>Dokument in sinnvolle Abschnitte aufteilen, zum Beispiel Kapitel, Anlagen oder Themenblöcke.</li>
+            <li>Jeden Abschnitt einzeln in die Quelle einfügen und zusammenfassen.</li>
+            <li>Die Teilzusammenfassungen sammeln und gemeinsam wieder in das Quellenfeld einfügen.</li>
+            <li>Aus den Teilzusammenfassungen eine Gesamtübersicht erstellen, zum Beispiel mit Vorlage Management Briefing oder Executive Summary.</li>
+          </ol>
+          <p>Geeignete Zusatzanweisung: Fasse die folgenden Teilzusammenfassungen zu einer Gesamtübersicht zusammen. Verdichte Wiederholungen, arbeite die wichtigsten Kernaussagen heraus, zeige Zusammenhänge zwischen den Abschnitten und nenne offene Punkte, Risiken und empfohlene nächste Schritte.</p>
         </section>
 
         <section class="manual-section">
@@ -504,7 +496,6 @@
         <section class="manual-section">
           <h3>Ansichten und Arbeitsbereich</h3>
           <p>Mit Quelle, Ergebnis und Geteilt wechselst du zwischen Eingabe, Ausgabe und paralleler Arbeitsansicht. Auf kleineren Bildschirmen startet die App in der Quellenansicht. Nach erfolgreicher Zusammenfassung wird automatisch das Ergebnis angezeigt.</p>
-          <p>Die Schnellaktionsleiste unten zeigt den aktuellen Status und startet die Zusammenfassung auch dann, wenn der Hauptbutton gerade nicht sichtbar ist.</p>
         </section>
 
         <section class="manual-section">
@@ -557,7 +548,7 @@
           <h3>Häufige Probleme</h3>
           <ul class="manual-list">
             <li><strong>Keine Verbindung:</strong> Prüfen, ob der API-Key korrekt gespeichert ist und die Internetverbindung funktioniert.</li>
-            <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder besteht aus Bildern. Vorher OCR verwenden.</li>
+            <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder sehr schlecht lesbar. Wenn kein Text extrahiert wird, nutzt die App bei der Zusammenfassung die visuelle PDF-Analyse von Claude. Dafür sind API-Key und Internetverbindung erforderlich.</li>
             <li><strong>Text zu groß:</strong> Quelle kürzen oder in Kapitel aufteilen. Maximal sind 180.000 Zeichen möglich.</li>
             <li><strong>Ergebnis zu allgemein:</strong> Fokus, Zielgruppe, Vorlage und Handlungsorientierung konkreter einstellen.</li>
             <li><strong>Profil fehlt:</strong> Eigene Profile werden in diesem Browser gespeichert. In einem anderen Browser oder nach gelöschtem Speicher sind sie nicht verfügbar.</li>

@@ -273,6 +273,94 @@ export async function requestClaudeSummary({
   return summary;
 }
 
+export async function requestClaudePdfSummary({
+  apiKey,
+  proxyUrl,
+  model,
+  pdfBase64,
+  fileName,
+  length,
+  language,
+  focus,
+  format,
+  template,
+  audience,
+  tone,
+  actionMode
+}) {
+  const { systemPrompt, userPrompt } = buildPrompts({
+    text: [
+      `PDF-Datei: ${fileName || "Dokument.pdf"}`,
+      "Analysiere das angehängte PDF visuell und inhaltlich. Extrahiere relevante Texte, Tabellen, Formularinhalte und sichtbare Strukturelemente, soweit sie im Dokument erkennbar sind."
+    ].join("\n"),
+    length,
+    language,
+    focus,
+    format,
+    template,
+    audience,
+    tone,
+    actionMode
+  });
+
+  const response = await fetch(proxyUrl || "/api/anthropic/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey
+    },
+    body: JSON.stringify({
+      model: model || DEFAULT_MODEL,
+      max_tokens: resolveTokenBudget(length, format),
+      temperature: 0.2,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "document",
+              source: {
+                type: "base64",
+                media_type: "application/pdf",
+                data: pdfBase64
+              },
+              cache_control: {
+                type: "ephemeral"
+              }
+            },
+            {
+              type: "text",
+              text: [
+                userPrompt,
+                "",
+                "Wichtig: Wenn das PDF gescannt ist oder Tabellen/Formulare enthält, nutze deine visuelle Dokumentanalyse. Gib keine OCR-Rohfassung aus, sondern eine hochwertige Zusammenfassung gemäß den Ausgabeparametern."
+              ].join("\n")
+            }
+          ]
+        }
+      ]
+    })
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw createAnthropicError(payload, response.status);
+  }
+
+  const textBlocks = Array.isArray(payload.content)
+    ? payload.content.filter((block) => block.type === "text").map((block) => block.text)
+    : [];
+
+  const summary = textBlocks.join("\n\n").trim();
+  if (!summary) {
+    throw new Error("Claude hat keine lesbare PDF-Zusammenfassung zurückgegeben.");
+  }
+
+  return summary;
+}
+
 export async function testClaudeConnection({ apiKey, proxyUrl, model }) {
   const response = await fetch(proxyUrl || "/api/anthropic/messages", {
     method: "POST",

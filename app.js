@@ -1,4 +1,4 @@
-import { requestClaudeSummary, testClaudeConnection } from "./anthropicClient.js";
+import { requestClaudePdfSummary, requestClaudeSummary, testClaudeConnection } from "./anthropicClient.js";
 import { extractTextFromPdf } from "./pdfExtractor.js";
 import { extractTextFromDocx } from "./docxExtractor.js";
 import {
@@ -17,7 +17,7 @@ const SESSION_KEY = "smart-summary-session-active";
 const HISTORY_KEY = "smart-summary-history";
 const PROFILE_KEY = "smart-summary-profiles";
 const MAX_HISTORY_ITEMS = 20;
-const DEFAULT_PROXY_URL = "/api/anthropic/messages";
+const DEFAULT_PROXY_URL = resolveLocalProxyUrl("/api/anthropic/messages");
 const DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514";
 const DEMO_LICENSE_KEY = "SMART-DEMO-2026-LOCAL";
 const DEMO_SOURCE_TEXT = [
@@ -126,6 +126,11 @@ const BUILT_IN_PROFILES = [
   }
 ];
 
+function resolveLocalProxyUrl(path) {
+  const isLocalServer = ["127.0.0.1", "localhost"].includes(window.location.hostname);
+  return isLocalServer ? `${window.location.origin}${path}` : `http://127.0.0.1:8182${path}`;
+}
+
 const apiKeyState = {
   value: "",
   isVisible: false,
@@ -138,6 +143,11 @@ const licenseState = {
   key: "",
   active: false,
   isBusy: false
+};
+
+const visualPdfState = {
+  fileName: "",
+  base64: ""
 };
 
 let currentSummaryText = "Noch keine Zusammenfassung erstellt.";
@@ -189,9 +199,6 @@ const elements = {
   toneSelect: document.querySelector("#toneSelect"),
   actionModeSelect: document.querySelector("#actionModeSelect"),
   summarizeBtn: document.querySelector("#summarizeBtn"),
-  quickSummarizeBtn: document.querySelector("#quickSummarizeBtn"),
-  quickActionTitle: document.querySelector("#quickActionTitle"),
-  quickActionMeta: document.querySelector("#quickActionMeta"),
   summaryOutput: document.querySelector("#summaryOutput"),
   copyBtn: document.querySelector("#copyBtn"),
   copyResultIconBtn: document.querySelector("#copyResultIconBtn"),
@@ -240,6 +247,7 @@ function init() {
 
 function bindEvents() {
   elements.sourceText.addEventListener("input", () => {
+    clearVisualPdfState();
     updateCharacterCount();
     const hasText = elements.sourceText.value.trim().length > 0;
     setStatus(hasText ? "Text erkannt" : "Bereit", "ready");
@@ -259,7 +267,6 @@ function bindEvents() {
     button.addEventListener("click", () => setViewMode(button.dataset.viewMode));
   });
   elements.summarizeBtn.addEventListener("click", handleSummarize);
-  elements.quickSummarizeBtn.addEventListener("click", handleSummarize);
   elements.copyBtn.addEventListener("click", copySummary);
   elements.copyResultIconBtn.addEventListener("click", copySummary);
   elements.exportMdBtn.addEventListener("click", () => exportSummary("md"));
@@ -474,11 +481,24 @@ function handleFileDrop(event) {
 
 async function processSelectedFile(file) {
   try {
+    clearVisualPdfState();
     setStatus("Text erkannt", "ready");
     elements.pdfStatus.textContent = `${file.name} wird ausgelesen...`;
     const extractedText = await extractTextFromFile(file);
 
     if (!extractedText.trim()) {
+      if (isPdfFile(file)) {
+        visualPdfState.fileName = file.name;
+        visualPdfState.base64 = await fileToBase64(file);
+        elements.sourceText.value = "";
+        elements.pdfStatus.textContent = `${file.name}: kein markierbarer Text erkannt. Visuelle PDF-Analyse wird bei der Zusammenfassung genutzt.`;
+        updateCharacterCount();
+        elements.textQuality.textContent = "Textqualität: PDF bereit für visuelle Analyse";
+        elements.textQuality.className = "quality-badge info";
+        setStatus("PDF für visuelle Analyse bereit", "ready");
+        return;
+      }
+
       throw new Error("In dieser Datei konnte kein auswertbarer Text erkannt werden.");
     }
 
@@ -495,7 +515,7 @@ async function processSelectedFile(file) {
 async function extractTextFromFile(file) {
   const extension = file.name.split(".").pop()?.toLowerCase();
 
-  if (file.type === "application/pdf" || extension === "pdf") {
+  if (isPdfFile(file)) {
     return extractTextFromPdf(file);
   }
 
@@ -510,9 +530,32 @@ async function extractTextFromFile(file) {
   throw new Error("Dieses Dateiformat wird noch nicht unterstützt.");
 }
 
+function isPdfFile(file) {
+  return file?.type === "application/pdf" || file?.name?.toLowerCase().endsWith(".pdf");
+}
+
+async function fileToBase64(file) {
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  let binary = "";
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+
+  return btoa(binary);
+}
+
+function clearVisualPdfState() {
+  visualPdfState.fileName = "";
+  visualPdfState.base64 = "";
+}
+
 async function handleSummarize() {
   const text = elements.sourceText.value.trim();
   const apiKey = apiKeyState.value;
+  const hasVisualPdf = Boolean(visualPdfState.base64);
 
   if (!apiKey) {
     setStatus("API-Key fehlt", "warn");
@@ -520,7 +563,7 @@ async function handleSummarize() {
     return;
   }
 
-  if (!text) {
+  if (!text && !hasVisualPdf) {
     setStatus("Fehler bei Verarbeitung", "danger");
     setSummaryOutput("Bitte füge zuerst einen Text ein oder lade eine PDF-Datei hoch.");
     return;
@@ -540,20 +583,36 @@ async function handleSummarize() {
     await shortPause();
     setStatus("Zusammenfassung wird erstellt", "warn");
 
-    const summary = await requestClaudeSummary({
-      apiKey,
-      proxyUrl: DEFAULT_PROXY_URL,
-      model: DEFAULT_CLAUDE_MODEL,
-      text,
-      length: elements.lengthSelect.value,
-      language: elements.languageSelect.value,
-      focus: elements.focusSelect.value,
-      format: elements.formatSelect.value,
-      template: elements.templateSelect.value,
-      audience: elements.audienceSelect.value,
-      tone: elements.toneSelect.value,
-      actionMode: elements.actionModeSelect.value
-    });
+    const summary = hasVisualPdf
+      ? await requestClaudePdfSummary({
+        apiKey,
+        proxyUrl: DEFAULT_PROXY_URL,
+        model: DEFAULT_CLAUDE_MODEL,
+        pdfBase64: visualPdfState.base64,
+        fileName: visualPdfState.fileName,
+        length: elements.lengthSelect.value,
+        language: elements.languageSelect.value,
+        focus: elements.focusSelect.value,
+        format: elements.formatSelect.value,
+        template: elements.templateSelect.value,
+        audience: elements.audienceSelect.value,
+        tone: elements.toneSelect.value,
+        actionMode: elements.actionModeSelect.value
+      })
+      : await requestClaudeSummary({
+        apiKey,
+        proxyUrl: DEFAULT_PROXY_URL,
+        model: DEFAULT_CLAUDE_MODEL,
+        text,
+        length: elements.lengthSelect.value,
+        language: elements.languageSelect.value,
+        focus: elements.focusSelect.value,
+        format: elements.formatSelect.value,
+        template: elements.templateSelect.value,
+        audience: elements.audienceSelect.value,
+        tone: elements.toneSelect.value,
+        actionMode: elements.actionModeSelect.value
+      });
 
     setStatus("Qualität wird geprüft", "warn");
     await shortPause();
@@ -824,10 +883,10 @@ function updateCharacterCount() {
   elements.charCount.classList.toggle("danger", count > MAX_CHARS);
   updateTextQuality(count);
   updateSourceInsights(text, count);
-  updateQuickAction(count);
 }
 
 function loadDemoSource() {
+  clearVisualPdfState();
   elements.sourceText.value = DEMO_SOURCE_TEXT;
   elements.pdfInput.value = "";
   elements.pdfStatus.textContent = "Demoquelle geladen";
@@ -937,9 +996,6 @@ function setStatus(label, type) {
   elements.statusText.textContent = label === "Bereit" ? "System bereit" : label;
   elements.statusDot.classList.toggle("warn", type === "warn");
   elements.statusDot.classList.toggle("danger", type === "danger");
-  if (elements.quickActionTitle) {
-    elements.quickActionTitle.textContent = label === "Bereit" ? "Bereit zur Zusammenfassung" : label;
-  }
 }
 
 function persistSettings() {
@@ -1088,24 +1144,7 @@ function setButtonLoading(button, isLoading) {
 
 function setSummaryButtonsDisabled(isDisabled) {
   elements.summarizeBtn.disabled = isDisabled;
-  elements.quickSummarizeBtn.disabled = isDisabled;
   setButtonLoading(elements.summarizeBtn, isDisabled);
-  setButtonLoading(elements.quickSummarizeBtn, isDisabled);
-}
-
-function updateQuickAction(count = elements.sourceText.value.length) {
-  if (!elements.quickActionMeta) return;
-
-  const formattedCount = count.toLocaleString("de-DE");
-  const sizeHint = count > MAX_CHARS
-    ? "Text ist zu groß"
-    : count > RECOMMENDED_CHARS
-      ? "sehr langer Text"
-      : count > 0
-        ? "Quelle bereit"
-        : "noch keine Quelle";
-
-  elements.quickActionMeta.textContent = `${formattedCount} Zeichen - ${sizeHint}`;
 }
 
 function setKeyFeedback(message, type) {
@@ -1175,7 +1214,7 @@ function printSummaryAsPdf() {
 }
 
 function resetWorkspace() {
-  const hasSource = elements.sourceText.value.trim().length > 0;
+  const hasSource = elements.sourceText.value.trim().length > 0 || Boolean(visualPdfState.base64);
   const hasSummary = currentSummaryText.trim() && currentSummaryText !== "Noch keine Zusammenfassung erstellt.";
 
   if ((hasSource || hasSummary) && !window.confirm("Arbeitsbereich wirklich leeren? Quelle und aktuelles Ergebnis werden entfernt. API-Key, Lizenz und Verlauf bleiben erhalten.")) {
@@ -1183,6 +1222,7 @@ function resetWorkspace() {
   }
 
   elements.sourceText.value = "";
+  clearVisualPdfState();
   elements.pdfInput.value = "";
   elements.pdfStatus.textContent = "Keine Datei ausgewählt";
   setSummaryOutput("Noch keine Zusammenfassung erstellt.", true);
@@ -1213,7 +1253,7 @@ function saveSummaryToHistory(summary) {
   const text = summary.trim();
   if (!text) return;
 
-  const source = elements.sourceText.value.trim();
+  const source = elements.sourceText.value.trim() || (visualPdfState.fileName ? `[Visuelle PDF-Analyse: ${visualPdfState.fileName}]` : "");
   const item = {
     id: String(Date.now()),
     createdAt: new Date().toISOString(),
@@ -1283,6 +1323,7 @@ function handleHistoryClick(event) {
   if (!item) return;
 
   if (item.source) {
+    clearVisualPdfState();
     elements.sourceText.value = item.source;
     elements.pdfStatus.textContent = "Quelle aus Verlauf geladen";
     updateCharacterCount();

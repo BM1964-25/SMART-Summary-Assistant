@@ -26,7 +26,18 @@ Unterstützte Textimporte:
 - HTML
 - CSV
 
-Es wird Text übernommen, nicht das originale Seitenlayout. Gescannte PDFs, Bilder und Screenshots benötigen vorher OCR.
+Es wird Text übernommen, nicht das originale Seitenlayout. Markierbarer PDF-Text wird direkt im Browser ausgelesen. Wenn kein auslesbarer Text erkannt wird, kann die Zusammenfassung über die visuelle PDF-Analyse von Claude erstellt werden.
+
+## PDF und visuelle Analyse
+
+Die PDF-Verarbeitung erfolgt in dieser Reihenfolge:
+
+1. PDF.js liest direkt vorhandenen PDF-Text im Browser aus.
+2. Wenn kein verwertbarer Text vorhanden ist, merkt sich die App die PDF-Datei für die Zusammenfassung.
+3. Beim Erstellen der Zusammenfassung wird die PDF über den lokalen Proxy als PDF-Dokument an Claude übergeben.
+4. Claude analysiert das Dokument visuell und inhaltlich und erstellt daraus die Zusammenfassung.
+
+Für gescannte PDFs sind damit keine zusätzlichen plattformspezifischen OCR-Werkzeuge erforderlich. Für die visuelle PDF-Analyse werden API-Key und Internetverbindung benötigt; das Dokument wird dafür an den KI-Anbieter übertragen.
 
 ## Zusammenfassungssteuerung
 
@@ -60,7 +71,7 @@ Sensible oder personenbezogene Daten sollten nur verarbeitet werden, wenn dies f
 
 ## Spätere Erweiterungen
 
-- OCR für gescannte PDFs und Bilder
+- Erweiterte visuelle Analyse für gescannte Dokumente und Bilder
 - Export als PDF oder DOCX
 - Import und Export für Profile und Verlauf
 - Erweiterte Team- und Mehrlizenz-Verwaltung

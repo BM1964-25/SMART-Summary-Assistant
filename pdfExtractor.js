@@ -4,7 +4,9 @@ const PDFJS_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.
 let pdfjsPromise;
 
 export async function extractTextFromPdf(file) {
-  if (!file || file.type !== "application/pdf") {
+  const isPdf = file?.type === "application/pdf" || file?.name?.toLowerCase().endsWith(".pdf");
+
+  if (!isPdf) {
     throw new Error("Bitte eine gültige PDF-Datei auswählen.");
   }
 
