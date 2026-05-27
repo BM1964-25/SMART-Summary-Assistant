@@ -58,7 +58,9 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .app-footer {
@@ -414,7 +416,7 @@ h2 {
 .workflow-panel::before {
   content: "";
   position: absolute;
-  top: 102px;
+  top: 98px;
   left: calc(12.5% + 18px);
   right: calc(12.5% + 18px);
   height: 1px;

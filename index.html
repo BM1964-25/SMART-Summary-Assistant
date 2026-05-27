@@ -418,12 +418,27 @@
         <section class="manual-section">
           <h3>Schnellstart</h3>
           <ol class="manual-steps">
-            <li><strong>Zugriff einrichten:</strong> Lizenz aktivieren und bei Bedarf einen Anthropic API-Key hinterlegen. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
+            <li><strong>KI-Zugang einrichten:</strong> Lizenz aktivieren und bei Bedarf einen Anthropic API-Key hinterlegen. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
             <li><strong>Quelle erfassen:</strong> Text direkt einfügen oder eine Datei per Drag & Drop, Datei auswählen oder Beispiel laden übernehmen.</li>
             <li><strong>Zusammenfassung steuern:</strong> Profil wählen oder die Parameter manuell einstellen.</li>
             <li><strong>Erstellen:</strong> Zusammenfassung erstellen anklicken. Bei langen Texten kann die Verarbeitung etwas dauern.</li>
             <li><strong>Ergebnis nutzen:</strong> Zusammenfassung prüfen, kopieren, als TXT, Markdown oder HTML speichern oder per Browser als PDF drucken.</li>
           </ol>
+        </section>
+
+        <section class="manual-section">
+          <h3>Anthropic API-Zugang einrichten</h3>
+          <p>Für KI-Zusammenfassungen benötigt die App einen gültigen Anthropic API-Key. Der Schlüssel wird in deinem Anthropic-Konto erstellt und anschließend in der App eingetragen.</p>
+          <ol class="manual-steps">
+            <li><strong>Anthropic Console öffnen:</strong> Gehe im Browser zu console.anthropic.com und melde dich mit deinem Anthropic-Konto an oder erstelle ein neues Konto.</li>
+            <li><strong>Abrechnung prüfen:</strong> Stelle sicher, dass dein Konto für API-Nutzung freigeschaltet ist und ein gültiges Guthaben oder eine aktive Zahlungsart hinterlegt ist.</li>
+            <li><strong>API-Key erstellen:</strong> Öffne in der Console den Bereich API Keys und erstelle einen neuen Schlüssel für diese App.</li>
+            <li><strong>Schlüssel kopieren:</strong> Kopiere den vollständigen API-Key direkt nach der Erstellung. Aus Sicherheitsgründen wird er später meist nicht noch einmal vollständig angezeigt.</li>
+            <li><strong>In der App eintragen:</strong> Öffne in SMART Summary Assistant die Kachel Zugriff, Lizenz & Datenschutz, klappe API-Key verwalten auf und füge den Schlüssel in das Feld API-Schlüssel ein.</li>
+            <li><strong>Speichern wählen:</strong> Wenn du API-Key in diesem Browser speichern aktivierst, bleibt der Schlüssel nur in diesem Browser gespeichert. Ohne Aktivierung gilt er nur für die aktuelle Sitzung.</li>
+            <li><strong>Verbindung prüfen:</strong> Klicke auf Speichern und anschließend auf Verbindung überprüfen. Bei Erfolg meldet die App, dass Anthropic den Test-Request beantwortet hat.</li>
+          </ol>
+          <p>Bewahre den API-Key vertraulich auf und teile ihn nicht mit anderen Personen. Wenn ein Schlüssel versehentlich offengelegt wurde, lösche ihn in der Anthropic Console und erstelle einen neuen.</p>
         </section>
 
         <section class="manual-section">
@@ -522,8 +537,8 @@
             <li><strong>Lizenzmodell:</strong> Eine Jahreslizenz läuft 12 Monate, verlängert sich automatisch um weitere 12 Monate und kann mit einer Frist von 1 Monat vor Ablauf gekündigt werden.</li>
             <li><strong>Testphase:</strong> Optional ist eine 7-Tage-Testphase mit vollem Funktionsumfang vorgesehen. Pro Lizenz ist ein Nutzerzugriff enthalten; mehrere Lizenzen bedeuten getrennte Nutzerzugriffe.</li>
             <li><strong>Demo-Lizenz:</strong> SMART-DEMO-2026-LOCAL kann für Tests verwendet werden.</li>
-            <li><strong>API-Key:</strong> Für KI-Funktionen kann ein eigener API-Key erforderlich sein. Der Schlüssel wird nur in diesem Browser gespeichert, wenn die Speicherung aktiviert ist.</li>
-            <li><strong>Datenverarbeitung:</strong> Inhalte werden für die KI-Zusammenfassung an Anthropic gesendet. Ohne gültige Verbindung wird keine KI-Anfrage ausgeführt.</li>
+            <li><strong>API-Key:</strong> Für KI-Funktionen kann ein eigener Anthropic API-Key erforderlich sein. Er wird in der Anthropic Console erstellt und nur in diesem Browser gespeichert, wenn die Speicherung aktiviert ist.</li>
+            <li><strong>Datenverarbeitung:</strong> Inhalte werden für die KI-Zusammenfassung über die lokale App-Verbindung an Anthropic gesendet. Ohne gültigen API-Key und aktive Verbindung wird keine KI-Anfrage ausgeführt.</li>
             <li><strong>Training:</strong> Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer bei Feedback oder ausdrücklichem Opt-in.</li>
           </ul>
         </section>
@@ -547,7 +562,7 @@
         <section class="manual-section">
           <h3>Häufige Probleme</h3>
           <ul class="manual-list">
-            <li><strong>Keine Verbindung:</strong> Prüfen, ob der API-Key korrekt gespeichert ist und die Internetverbindung funktioniert.</li>
+            <li><strong>Keine Verbindung:</strong> Prüfen, ob der API-Key vollständig gespeichert ist, das Anthropic-Konto API-Nutzung erlaubt, Guthaben oder Zahlungsart aktiv sind und die Internetverbindung funktioniert.</li>
             <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder sehr schlecht lesbar. Wenn kein Text extrahiert wird, nutzt die App bei der Zusammenfassung die visuelle PDF-Analyse von Claude. Dafür sind API-Key und Internetverbindung erforderlich.</li>
             <li><strong>Text zu groß:</strong> Quelle kürzen oder in Kapitel aufteilen. Maximal sind 180.000 Zeichen möglich.</li>
             <li><strong>Ergebnis zu allgemein:</strong> Fokus, Zielgruppe, Vorlage und Handlungsorientierung konkreter einstellen.</li>
