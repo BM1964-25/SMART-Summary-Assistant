@@ -228,11 +228,18 @@ h2 {
 }
 
 .help-button {
-  width: 44px;
+  min-width: 44px;
   height: 44px;
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 15px;
   font-size: 1rem;
+}
+
+.help-button span:last-child {
+  font-size: 0.9rem;
 }
 
 .help-button:hover,
@@ -1570,8 +1577,8 @@ button.is-loading::before {
 }
 
 .help-modal {
-  width: min(980px, 100%);
-  max-height: min(760px, calc(100vh - 48px));
+  width: min(1120px, 100%);
+  max-height: min(820px, calc(100vh - 48px));
   overflow: auto;
   padding: 22px;
   border: 1px solid var(--line);
@@ -1633,6 +1640,68 @@ button.is-loading::before {
   gap: 14px;
 }
 
+.help-tools {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.help-tools label {
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.help-tools input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.help-tools input:focus {
+  border-color: rgba(15, 90, 167, 0.48);
+  box-shadow: 0 0 0 3px rgba(22, 104, 184, 0.1);
+}
+
+.help-shell {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.help-nav {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fbff;
+}
+
+.help-nav a {
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: var(--soft);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.help-nav a:hover,
+.help-nav a:focus-visible {
+  background: #eef6ff;
+  color: var(--accent-strong);
+  outline: none;
+}
+
 .manual-intro,
 .manual-section {
   padding: 16px;
@@ -1651,6 +1720,12 @@ button.is-loading::before {
   font-size: 1rem;
 }
 
+.manual-section h4 {
+  margin: 16px 0 8px;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
 .manual-intro p,
 .manual-section p,
 .manual-list,
@@ -1664,8 +1739,23 @@ button.is-loading::before {
 .manual-section p + p,
 .manual-section p + .manual-list,
 .manual-section p + .manual-steps,
-.manual-section p + .manual-terms {
+.manual-section p + .manual-terms,
+.manual-callout + h4 {
   margin-top: 10px;
+}
+
+.manual-callout {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid rgba(15, 90, 167, 0.2);
+  border-radius: var(--radius);
+  background: #eef6ff;
+}
+
+.manual-callout p {
+  margin: 0;
 }
 
 .manual-list,
@@ -1710,6 +1800,14 @@ button.is-loading::before {
 
 .manual-terms dd {
   margin: 0;
+}
+
+.help-empty {
+  padding: 14px;
+  border: 1px dashed rgba(151, 166, 188, 0.55);
+  border-radius: var(--radius);
+  color: var(--soft);
+  background: #ffffff;
 }
 
 @media (max-width: 1050px) {
@@ -1893,6 +1991,15 @@ button.is-loading::before {
 
   .help-grid {
     grid-template-columns: 1fr;
+  }
+
+  .help-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .help-nav {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .manual-terms {

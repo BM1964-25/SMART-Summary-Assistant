@@ -19,8 +19,9 @@
         </div>
       </div>
       <div class="header-actions">
-        <label class="help-button" for="helpToggle" aria-label="Hilfe öffnen">
+        <label class="help-button" for="helpToggle" role="button" tabindex="0" aria-label="Hilfe öffnen">
           <span aria-hidden="true">?</span>
+          <span>Hilfe</span>
         </label>
         <div class="status-panel" aria-live="polite">
           <span class="status-dot" id="statusDot"></span>
@@ -417,169 +418,172 @@
           <p class="eyebrow">Bedienungsanleitung</p>
           <h2 id="helpTitle">SMART Summary Assistant verwenden</h2>
         </div>
-        <label class="modal-close" for="helpToggle" aria-label="Hilfe schließen">×</label>
+        <label class="modal-close" for="helpToggle" role="button" tabindex="0" aria-label="Hilfe schließen">×</label>
       </div>
 
-      <div class="help-manual">
-        <section class="manual-intro">
-          <h3>Zweck der App</h3>
-          <p>Der SMART Summary Assistant erstellt aus eingefügten Texten oder importierten Dateien strukturierte KI-Zusammenfassungen. Du steuerst dabei Länge, Sprache, Zielgruppe, Fokus, Ton, Handlungsorientierung und Ausgabeformat.</p>
-        </section>
+      <div class="help-tools">
+        <label for="helpSearch">Hilfe durchsuchen</label>
+        <input id="helpSearch" type="search" autocomplete="off" placeholder="Suchbegriff eingeben, z. B. API-Key, PDF, Export">
+      </div>
 
-        <section class="manual-section">
-          <h3>Schnellstart</h3>
-          <ol class="manual-steps">
-            <li><strong>KI-Zugang einrichten:</strong> Lizenz aktivieren und bei Bedarf einen Anthropic API-Key hinterlegen. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
-            <li><strong>Quelle erfassen:</strong> Text direkt einfügen oder eine Datei per Drag & Drop, Datei auswählen oder Beispiel laden übernehmen.</li>
-            <li><strong>Zusammenfassung steuern:</strong> Profil wählen oder die Parameter manuell einstellen.</li>
-            <li><strong>Erstellen:</strong> Zusammenfassung erstellen anklicken. Bei langen Texten kann die Verarbeitung etwas dauern.</li>
-            <li><strong>Ergebnis nutzen:</strong> Zusammenfassung prüfen, kopieren, als TXT, Markdown oder HTML speichern oder per Browser als PDF drucken.</li>
-          </ol>
-        </section>
+      <div class="help-shell">
+        <nav class="help-nav" aria-label="Kapitel der Bedienungsanleitung">
+          <a href="#help-overview">Überblick</a>
+          <a href="#help-access">Einrichtung & Zugang</a>
+          <a href="#help-quickstart">Schnellstart</a>
+          <a href="#help-interface">Bedienoberfläche</a>
+          <a href="#help-features">Wichtige Funktionen</a>
+          <a href="#help-workflow">Typischer Workflow</a>
+          <a href="#help-data">Eingaben & Daten</a>
+          <a href="#help-results">Ergebnisse verstehen</a>
+          <a href="#help-errors">Fehler & Lösungen</a>
+          <a href="#help-version">Version & Hinweise</a>
+        </nav>
 
-        <section class="manual-section">
-          <h3>Anthropic API-Zugang einrichten</h3>
-          <p>Für KI-Zusammenfassungen benötigt die App einen gültigen Anthropic API-Key. Der Schlüssel wird in deinem Anthropic-Konto erstellt und anschließend in der App eingetragen.</p>
-          <ol class="manual-steps">
-            <li><strong>Anthropic Console öffnen:</strong> Gehe im Browser zu console.anthropic.com und melde dich mit deinem Anthropic-Konto an oder erstelle ein neues Konto.</li>
-            <li><strong>Abrechnung prüfen:</strong> Stelle sicher, dass dein Konto für API-Nutzung freigeschaltet ist und ein gültiges Guthaben oder eine aktive Zahlungsart hinterlegt ist.</li>
-            <li><strong>API-Key erstellen:</strong> Öffne in der Console den Bereich API Keys und erstelle einen neuen Schlüssel für diese App.</li>
-            <li><strong>Schlüssel kopieren:</strong> Kopiere den vollständigen API-Key direkt nach der Erstellung. Aus Sicherheitsgründen wird er später meist nicht noch einmal vollständig angezeigt.</li>
-            <li><strong>In der App eintragen:</strong> Öffne in SMART Summary Assistant die Kachel Zugriff, Lizenz & Datenschutz, klappe API-Key verwalten auf und füge den Schlüssel in das Feld API-Schlüssel ein.</li>
-            <li><strong>Speichern wählen:</strong> Wenn du API-Key in diesem Browser speichern aktivierst, bleibt der Schlüssel nur in diesem Browser gespeichert. Ohne Aktivierung gilt er nur für die aktuelle Sitzung.</li>
-            <li><strong>Verbindung prüfen:</strong> Klicke auf Speichern und anschließend auf Verbindung überprüfen. Bei Erfolg meldet die App, dass Anthropic den Test-Request beantwortet hat.</li>
-          </ol>
-          <p>Bewahre den API-Key vertraulich auf und teile ihn nicht mit anderen Personen. Wenn ein Schlüssel versehentlich offengelegt wurde, lösche ihn in der Anthropic Console und erstelle einen neuen.</p>
-        </section>
+        <div class="help-manual" id="helpManual">
+          <section class="manual-intro manual-section" id="help-overview" data-help-section>
+            <h3>Überblick</h3>
+            <p>SMART Summary Assistant ist eine browserbasierte KI-Arbeitsoberfläche für professionelle Zusammenfassungen. Die App verwandelt eingefügte Texte und Dokumente in strukturierte Ergebnisse für Facharbeit, Management, Entscheidungen, Risiken, Aufgaben und nächste Schritte.</p>
+            <p>Du steuerst Länge, Sprache, Vorlage, Zielgruppe, Fokus, Ton, Handlungsorientierung und Ausgabeformat. Die App eignet sich besonders für Berichte, Angebote, Protokolle, Fachtexte, Projektunterlagen, PDF-Dokumente und umfangreiche Arbeitsmaterialien.</p>
+          </section>
 
-        <section class="manual-section">
-          <h3>Quelle erfassen</h3>
-          <p>Im Bereich Quelle kannst du Text direkt eingeben, einfügen oder aus Dateien übernehmen. Der importierte Text wird automatisch in das Quellenfeld eingefügt und kann vor der Zusammenfassung geprüft, gekürzt oder ergänzt werden.</p>
-          <ul class="manual-list">
-            <li><strong>Unterstützte Formate:</strong> TXT, MD, PDF, DOCX, RTF, HTML und CSV.</li>
-            <li><strong>PDF:</strong> Markierbarer Text wird direkt im Browser ausgelesen. Wenn kein auslesbarer Text erkannt wird, kann die Zusammenfassung über die visuelle PDF-Analyse von Claude erstellt werden.</li>
-            <li><strong>Office-Dateien:</strong> Google Docs und Apple Pages bitte als DOCX, PDF oder TXT exportieren.</li>
-            <li><strong>Layout:</strong> Die App extrahiert Text, nicht das originale Seitenlayout.</li>
-          </ul>
-        </section>
+          <section class="manual-section" id="help-access" data-help-section>
+            <h3>Einrichtung & Zugang</h3>
+            <p>Die App benötigt zwei getrennte Zugänge: den Lizenzschlüssel für die App-Nutzung und den Anthropic API-Key für die KI-Funktionen.</p>
+            <div class="manual-callout">
+              <p><strong>Lizenzschlüssel und API-Key erfüllen unterschiedliche Aufgaben:</strong></p>
+              <p>Der Lizenzschlüssel aktiviert die Nutzung dieser App. Er bestätigt, dass Sie berechtigt sind, die Software zu verwenden.</p>
+              <p>Der API-Key verbindet die App mit Ihrem Anthropic-Konto. Er ist erforderlich, damit KI-Funktionen ausgeführt werden können. Auch bei einer bezahlten App-Lizenz wird ein eigener API-Key benötigt, weil die Nutzung der KI-Modelle technisch und abrechnungstechnisch getrennt über Anthropic erfolgt.</p>
+            </div>
+            <h4>Lizenzschlüssel aktivieren</h4>
+            <ol class="manual-steps compact">
+              <li>Öffne die Kachel <strong>Zugriff, Lizenz & Datenschutz</strong>.</li>
+              <li>Klappe <strong>Lizenz verwalten</strong> auf und trage den Lizenzschlüssel in das Feld <strong>Lizenzschlüssel</strong> ein.</li>
+              <li>Klicke auf <strong>Lizenz speichern</strong> und danach auf <strong>Lizenz prüfen</strong>.</li>
+              <li>Der Lizenzschlüssel wird nach Kauf, Testphase oder interner Freischaltung benötigt und aktiviert die berechtigte Nutzung dieser App.</li>
+              <li>Der Lizenzschlüssel schaltet die App-Nutzung frei, ersetzt aber nicht den Anthropic API-Key.</li>
+            </ol>
+            <h4>API-Key erstellen</h4>
+            <ol class="manual-steps compact">
+              <li>Öffne die Anthropic Console unter <strong>console.anthropic.com</strong>.</li>
+              <li>Erstelle ein Anthropic-Konto oder logge dich in dein bestehendes Konto ein.</li>
+              <li>Öffne den Bereich <strong>API Keys</strong>.</li>
+              <li>Erstelle einen neuen API-Key für diese App.</li>
+              <li>Kopiere den vollständigen API-Key direkt nach der Erstellung.</li>
+              <li>Öffne in der App <strong>Zugriff, Lizenz & Datenschutz</strong>, klappe <strong>API-Key verwalten</strong> auf und trage den Schlüssel in das Feld <strong>API-Schlüssel</strong> ein.</li>
+              <li>Klicke auf <strong>Speichern</strong> und anschließend auf <strong>Verbindung überprüfen</strong>.</li>
+            </ol>
+            <p><strong>Wichtig:</strong> Der API-Key wird häufig nur einmal vollständig angezeigt. Speichere ihn sicher und teile ihn nicht mit anderen Personen.</p>
+            <h4>Warum ein API-Key erforderlich ist</h4>
+            <p>Die App nutzt KI-Funktionen über die Anthropic API. Der API-Key verbindet die App mit deinem persönlichen Anthropic-Konto. Dadurch werden KI-Anfragen deinem eigenen Anthropic-Konto zugeordnet. Ohne gültigen API-Key können KI-Funktionen nicht ausgeführt werden.</p>
+            <h4>Warum auch bei bezahltem App-Abo ein API-Key nötig ist</h4>
+            <p>App-Lizenz beziehungsweise App-Abo und KI-Nutzung sind getrennt. Die App-Lizenz bezahlt die Nutzung der Software. Die Anthropic API-Nutzung wird separat über dein Anthropic-Konto verarbeitet beziehungsweise abgerechnet. Deshalb ist auch bei bezahlter App-Lizenz ein eigener API-Key erforderlich.</p>
+            <h4>Warum Anthropic verwendet wird</h4>
+            <p>Anthropic wurde gewählt, weil Claude-Modelle stark bei strukturiertem Arbeiten, Textanalyse, Zusammenfassungen und professionellen Workflows sind. Claude eignet sich gut für längere Dokumente, komplexe Eingaben und nachvollziehbare Ausgaben. Anthropic legt großen Wert auf Sicherheit, Zuverlässigkeit und verantwortungsvolle KI-Nutzung. Die API ermöglicht eine stabile Integration in professionelle Anwendungen. Über den eigenen API-Key behältst du Kontrolle über Nutzung und Abrechnung.</p>
+          </section>
 
-        <section class="manual-section">
-          <h3>Quellenanalyse verstehen</h3>
-          <p>Die Werte unter dem Quellenfeld helfen einzuschätzen, ob der Text gut für eine KI-Zusammenfassung geeignet ist.</p>
-          <ul class="manual-list">
-            <li><strong>Zeichen:</strong> Verständliche Größenangabe für den eingegebenen Text.</li>
-            <li><strong>Token-Schätzung:</strong> Grober KI-Verarbeitungsumfang, näherungsweise Zeichen geteilt durch vier.</li>
-            <li><strong>Absätze:</strong> Zeigt, ob der Text ausreichend strukturiert ist.</li>
-            <li><strong>Erkannte Sprache und Struktur:</strong> Orientierung für Qualität und Lesbarkeit der Quelle.</li>
-          </ul>
-        </section>
+          <section class="manual-section" id="help-quickstart" data-help-section>
+            <h3>Schnellstart</h3>
+            <ol class="manual-steps">
+              <li><strong>Lizenzschlüssel aktivieren:</strong> Öffne Einrichtung & Zugang, speichere den Lizenzschlüssel und prüfe die Lizenz.</li>
+              <li><strong>API-Key eintragen:</strong> Erstelle den Anthropic API-Key, trage ihn ein, speichere ihn und prüfe die Verbindung.</li>
+              <li><strong>Erste Eingaben machen:</strong> Füge Text in das Quellenfeld ein oder importiere eine Datei per Drag & Drop oder Datei auswählen.</li>
+              <li><strong>Zusammenfassung einstellen:</strong> Wähle Profil, Vorlage, Zielgruppe, Fokus, Länge und Ausgabeformat.</li>
+              <li><strong>Analyse starten:</strong> Klicke auf <strong>Zusammenfassung erstellen</strong>.</li>
+              <li><strong>Ergebnis prüfen:</strong> Lies die Ausgabe, kopiere sie oder exportiere sie als TXT, Markdown, HTML oder PDF-Druck.</li>
+            </ol>
+          </section>
 
-        <section class="manual-section">
-          <h3>Textmenge und technische Grenzen</h3>
-          <p>Für hochprofessionelle Ergebnisse sollte die App nicht am technischen Maximum betrieben werden. Entscheidend sind Textqualität, Struktur, gewünschte Detailtiefe und Ausgabeformat.</p>
-          <dl class="manual-terms">
-            <div><dt>Empfohlener Qualitätsbereich</dt><dd>Ca. 60.000 bis 100.000 Zeichen, etwa 15.000 bis 25.000 Token, ca. 9.000 bis 16.000 Wörter oder ungefähr 30 bis 55 DIN-A4-Seiten.</dd></div>
-            <div><dt>Technische Maximalgrenze</dt><dd>Bis 180.000 Zeichen, etwa 45.000 Token, ca. 27.000 bis 30.000 Wörter oder ungefähr 70 bis 100 DIN-A4-Seiten.</dd></div>
-          </dl>
-          <p>Bis ca. 60.000 Zeichen arbeitet die App besonders stabil und präzise. Bis ca. 100.000 Zeichen sind professionelle Ergebnisse gut erreichbar, wenn das Dokument sauber gegliedert ist. Bei längeren Quellen empfiehlt sich eine kapitelweise Zusammenfassung mit anschließender Gesamtsynthese.</p>
-          <p>Sehr große Quellen erhöhen Laufzeit, Kosten und Fehlerrisiko. Die Seitenangaben sind Richtwerte, da Schriftgröße, Rand, Zeilenabstand, Tabellen und Textdichte stark variieren.</p>
-          <h4>Gesamtübersicht aus mehreren Teilzusammenfassungen erstellen</h4>
-          <ol class="manual-steps compact">
-            <li>Dokument in sinnvolle Abschnitte aufteilen, zum Beispiel Kapitel, Anlagen oder Themenblöcke.</li>
-            <li>Jeden Abschnitt einzeln in die Quelle einfügen und zusammenfassen.</li>
-            <li>Die Teilzusammenfassungen sammeln und gemeinsam wieder in das Quellenfeld einfügen.</li>
-            <li>Aus den Teilzusammenfassungen eine Gesamtübersicht erstellen, zum Beispiel mit Vorlage Management Briefing oder Executive Summary.</li>
-          </ol>
-          <p>Geeignete Zusatzanweisung: Fasse die folgenden Teilzusammenfassungen zu einer Gesamtübersicht zusammen. Verdichte Wiederholungen, arbeite die wichtigsten Kernaussagen heraus, zeige Zusammenhänge zwischen den Abschnitten und nenne offene Punkte, Risiken und empfohlene nächste Schritte.</p>
-        </section>
+          <section class="manual-section" id="help-interface" data-help-section>
+            <h3>Bedienoberfläche</h3>
+            <dl class="manual-terms">
+              <div><dt>Quelle</dt><dd>Hier werden Texte eingegeben, eingefügt oder aus Dateien übernommen. Der Papierkorb im Feld löscht nur die Quelle.</dd></div>
+              <div><dt>Zusammenfassung</dt><dd>Hier steuerst du Vorlage, Zielgruppe, Sprache, Fokus, Ton, Handlungsorientierung, Länge und Ausgabeformat.</dd></div>
+              <div><dt>Ergebnis</dt><dd>Hier erscheint die KI-Zusammenfassung. Die Icons im Ergebnisfeld kopieren oder löschen nur das Ergebnis.</dd></div>
+              <div><dt>Ansichten</dt><dd>Mit Quelle, Ergebnis und Geteilt wechselst du zwischen Eingabe, Ausgabe und paralleler Arbeitsansicht.</dd></div>
+              <div><dt>Lokaler Verlauf</dt><dd>Speichert maximal 20 Zusammenfassungen in diesem Browser und kann jederzeit geleert werden.</dd></div>
+              <div><dt>Zugriff, Lizenz & Datenschutz</dt><dd>Enthält Lizenzprüfung, API-Key-Verwaltung, Verbindungstest und Datenschutzinformationen.</dd></div>
+            </dl>
+          </section>
 
-        <section class="manual-section">
-          <h3>Zusammenfassung einstellen</h3>
-          <p>Alle Auswahlfelder werden in die Claude-Anweisung übernommen. Dadurch wird die Ausgabe auf Zweck, Publikum und spätere Nutzung zugeschnitten.</p>
-          <dl class="manual-terms">
-            <div><dt>Vorlage</dt><dd>Grundstruktur der Ausgabe, zum Beispiel Management Briefing, Risikoanalyse, Projektstatus oder To-do-Liste.</dd></div>
-            <div><dt>Zielgruppe</dt><dd>Legt fest, für wen die Zusammenfassung formuliert wird, etwa Management, Fachteam, Kunde, technisch oder juristisch.</dd></div>
-            <div><dt>Sprache</dt><dd>Bestimmt die Ausgabesprache unabhängig von der Quellsprache.</dd></div>
-            <div><dt>Fokus</dt><dd>Lenkt die Aufmerksamkeit auf Kernaussagen, Fakten, Risiken, Chancen, offene Fragen oder Handlungsempfehlungen.</dd></div>
-            <div><dt>Ton / Stil</dt><dd>Steuert die Ausdrucksweise, zum Beispiel neutral, prägnant, formal, beratend, kritisch oder einfach erklärt.</dd></div>
-            <div><dt>Handlungsorientierung</dt><dd>Bestimmt, ob nur zusammengefasst wird oder ob Empfehlungen, nächste Schritte, Entscheidungsgrundlagen oder offene Punkte ergänzt werden.</dd></div>
-            <div><dt>Länge</dt><dd>Wählt zwischen kurzer, mittlerer und detaillierter Zusammenfassung.</dd></div>
-            <div><dt>Ausgabeformat</dt><dd>Erzeugt Fließtext, Stichpunkte, Tabelle, Executive Summary oder Entscheidungsnotiz.</dd></div>
-          </dl>
-        </section>
+          <section class="manual-section" id="help-features" data-help-section>
+            <h3>Wichtige Funktionen</h3>
+            <ul class="manual-list">
+              <li><strong>Dateiimport:</strong> Unterstützt TXT, MD, PDF, DOCX, RTF, HTML und CSV.</li>
+              <li><strong>PDF-Verarbeitung:</strong> Markierbarer PDF-Text wird lokal im Browser ausgelesen. Wenn kein Text extrahiert werden kann, nutzt die App bei der Zusammenfassung die visuelle PDF-Analyse von Claude.</li>
+              <li><strong>Profile:</strong> Vordefinierte und eigene Profile speichern komplette Parameterkombinationen.</li>
+              <li><strong>Quellenanalyse:</strong> Zeichen, Token-Schätzung, Absätze, Sprache und Struktur geben Orientierung zur Textqualität.</li>
+              <li><strong>Export:</strong> Ergebnisse können kopiert, als Text, Markdown oder HTML gespeichert oder über den Browser als PDF gedruckt werden.</li>
+              <li><strong>Lokaler Verlauf:</strong> Die letzten 20 Ergebnisse bleiben lokal im Browser verfügbar.</li>
+            </ul>
+          </section>
 
-        <section class="manual-section">
-          <h3>Profile verwenden</h3>
-          <p>Profile speichern komplette Parameterkombinationen. Vordefinierte Profile können direkt gewählt werden; eigene Profile werden in diesem Browser gespeichert.</p>
-          <ol class="manual-steps compact">
-            <li>Profil aus der Liste auswählen. Die Werte werden automatisch gesetzt.</li>
-            <li>Alternativ Profil anwenden anklicken, um das gewählte Profil erneut auf die Felder zu übertragen.</li>
-            <li>Aktuelle Einstellungen speichern legt ein eigenes Profil mit den aktuellen Auswahlfeldern an.</li>
-            <li>Profil löschen entfernt nur eigene Profile. Vordefinierte Profile bleiben erhalten.</li>
-          </ol>
-        </section>
+          <section class="manual-section" id="help-workflow" data-help-section>
+            <h3>Typischer Workflow</h3>
+            <ol class="manual-steps">
+              <li><strong>KI-Zugang einrichten:</strong> Lizenz aktivieren und API-Key verbinden.</li>
+              <li><strong>Quelle erfassen:</strong> Dokument importieren oder Text einfügen und kurz auf Lesbarkeit prüfen.</li>
+              <li><strong>Zusammenfassung steuern:</strong> Profil oder manuelle Parameter passend zum Zweck wählen.</li>
+              <li><strong>Ergebnis nutzen:</strong> Zusammenfassung prüfen, bei Bedarf Parameter nachschärfen und exportieren.</li>
+            </ol>
+            <p>Für Entscheidungen eignen sich etwa Vorlage <strong>Entscheidungsvorlage</strong>, Fokus <strong>Handlungsempfehlungen</strong> und Ausgabeformat <strong>Entscheidungsnotiz</strong>. Für Management-Unterlagen eignen sich <strong>Management Briefing</strong>, Zielgruppe <strong>Management</strong> und <strong>Executive Summary</strong>.</p>
+          </section>
 
-        <section class="manual-section">
-          <h3>Ansichten und Arbeitsbereich</h3>
-          <p>Mit Quelle, Ergebnis und Geteilt wechselst du zwischen Eingabe, Ausgabe und paralleler Arbeitsansicht. Auf kleineren Bildschirmen startet die App in der Quellenansicht. Nach erfolgreicher Zusammenfassung wird automatisch das Ergebnis angezeigt.</p>
-        </section>
+          <section class="manual-section" id="help-data" data-help-section>
+            <h3>Eingaben & Daten</h3>
+            <p>Die App läuft browserbasiert und kann auf Windows, macOS und anderen modernen Systemen genutzt werden. Fachliche Inhalte können lokal in diesem Browser gespeichert werden. Eine automatische Cloud-Synchronisierung der App-Inhalte ist in Version 1 nicht vorgesehen.</p>
+            <dl class="manual-terms">
+              <div><dt>Empfohlener Qualitätsbereich</dt><dd>Ca. 60.000 bis 100.000 Zeichen, etwa 15.000 bis 25.000 Token, ca. 9.000 bis 16.000 Wörter oder ungefähr 30 bis 55 DIN-A4-Seiten.</dd></div>
+              <div><dt>Technische Maximalgrenze</dt><dd>Bis 180.000 Zeichen, etwa 45.000 Token, ca. 27.000 bis 30.000 Wörter oder ungefähr 70 bis 100 DIN-A4-Seiten.</dd></div>
+            </dl>
+            <p>Für sehr umfangreiche oder thematisch gemischte Unterlagen ist es sinnvoll, Kapitel, Anlagen oder Themenblöcke einzeln zusammenzufassen und die Teilzusammenfassungen anschließend zu einer Gesamtübersicht zu verdichten.</p>
+            <h4>Gesamtübersicht aus Teilzusammenfassungen</h4>
+            <ol class="manual-steps compact">
+              <li>Dokument in Kapitel, Anlagen oder Themenblöcke aufteilen.</li>
+              <li>Jeden Abschnitt einzeln zusammenfassen.</li>
+              <li>Die Teilzusammenfassungen gemeinsam wieder in das Quellenfeld einfügen.</li>
+              <li>Eine Gesamtübersicht mit Executive Summary oder Management Briefing erstellen.</li>
+            </ol>
+          </section>
 
-        <section class="manual-section">
-          <h3>Ergebnis nutzen</h3>
-          <ul class="manual-list">
-            <li><strong>Kopieren:</strong> Legt die Zusammenfassung in die Zwischenablage.</li>
-            <li><strong>Text speichern:</strong> Exportiert eine reine TXT-Datei.</li>
-            <li><strong>Markdown speichern:</strong> Exportiert eine strukturierte MD-Datei.</li>
-            <li><strong>HTML speichern:</strong> Exportiert eine HTML-Datei zur weiteren Nutzung oder Archivierung.</li>
-            <li><strong>PDF drucken:</strong> Öffnet den Browser-Druckdialog für PDF-Ausgabe.</li>
-            <li><strong>Arbeitsbereich leeren:</strong> Entfernt Quelle, Ergebnis und Dateistatus. API-Key, Lizenz und Verlauf bleiben erhalten.</li>
-          </ul>
-        </section>
+          <section class="manual-section" id="help-results" data-help-section>
+            <h3>Ergebnisse verstehen</h3>
+            <p>Die Ausgabe folgt den gewählten Parametern. Länge, Fokus, Zielgruppe, Ton und Format verändern bewusst Struktur und Detailtiefe. Prüfe wichtige Fakten, Zahlen, Termine und Namen immer gegen die Quelle, besonders bei rechtlichen, finanziellen oder vertraulichen Inhalten.</p>
+            <ul class="manual-list">
+              <li><strong>Fließtext:</strong> Gut für kurze Zusammenfassungen und Weitergabe per E-Mail.</li>
+              <li><strong>Stichpunkte:</strong> Gut für schnelle Orientierung und operative Weiterarbeit.</li>
+              <li><strong>Tabelle:</strong> Gut für Risiken, Aufgaben, offene Punkte und Vergleiche.</li>
+              <li><strong>Executive Summary:</strong> Gut für Management, Entscheidungen und kompakte Lagebilder.</li>
+              <li><strong>Entscheidungsnotiz:</strong> Gut für Optionen, Bewertung, Empfehlung und nächste Schritte.</li>
+            </ul>
+          </section>
 
-        <section class="manual-section">
-          <h3>Lokaler Verlauf</h3>
-          <p>Die letzten Zusammenfassungen werden in diesem Browser gespeichert und können wieder geöffnet werden. Es werden maximal 20 Einträge angezeigt und gespeichert. Der Verlauf wird nicht automatisch mit einer Cloud synchronisiert und kann jederzeit über Verlauf leeren entfernt werden.</p>
-        </section>
+          <section class="manual-section" id="help-errors" data-help-section>
+            <h3>Fehler & Lösungen</h3>
+            <ul class="manual-list">
+              <li><strong>Keine Verbindung:</strong> Prüfe, ob der API-Key vollständig gespeichert ist, das Anthropic-Konto API-Nutzung erlaubt, Guthaben oder Zahlungsart aktiv sind und die Internetverbindung funktioniert.</li>
+              <li><strong>API-Key ungültig:</strong> Erstelle in der Anthropic Console einen neuen API-Key und trage ihn erneut ein.</li>
+              <li><strong>Lizenz nicht aktiv:</strong> Prüfe Schreibweise, Leerzeichen und ob der Lizenzschlüssel zum Produkt gehört. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
+              <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder schlecht lesbar. Die visuelle PDF-Analyse von Claude kann helfen, benötigt aber API-Key und Internetverbindung.</li>
+              <li><strong>Text zu groß:</strong> Kürze die Quelle oder teile das Dokument in Kapitel auf. Maximal sind 180.000 Zeichen vorgesehen.</li>
+              <li><strong>Ergebnis zu allgemein:</strong> Wähle konkretere Werte für Fokus, Zielgruppe, Vorlage und Handlungsorientierung.</li>
+              <li><strong>405 oder API-Fehler:</strong> Starte die App über den lokalen Server beziehungsweise Launcher, damit KI-Anfragen über den lokalen Proxy gesendet werden.</li>
+            </ul>
+          </section>
 
-        <section class="manual-section">
-          <h3>Nutzerzugriff, Lizenz und Datenschutz</h3>
-          <ul class="manual-list">
-            <li><strong>Persönlicher Zugriff:</strong> Für Testphase, Kauf und Lizenzprüfung ist ein eigener Nutzerzugriff vorgesehen. Der Login kann einfach per E-Mail/Magic Link erfolgen.</li>
-            <li><strong>Lizenzmodell:</strong> Eine Jahreslizenz läuft 12 Monate, verlängert sich automatisch um weitere 12 Monate und kann mit einer Frist von 1 Monat vor Ablauf gekündigt werden.</li>
-            <li><strong>Testphase:</strong> Optional ist eine 7-Tage-Testphase mit vollem Funktionsumfang vorgesehen. Pro Lizenz ist ein Nutzerzugriff enthalten; mehrere Lizenzen bedeuten getrennte Nutzerzugriffe.</li>
-            <li><strong>Demo-Lizenz:</strong> SMART-DEMO-2026-LOCAL kann für Tests verwendet werden.</li>
-            <li><strong>API-Key:</strong> Für KI-Funktionen kann ein eigener Anthropic API-Key erforderlich sein. Er wird in der Anthropic Console erstellt und nur in diesem Browser gespeichert, wenn die Speicherung aktiviert ist.</li>
-            <li><strong>Datenverarbeitung:</strong> Inhalte werden für die KI-Zusammenfassung über die lokale App-Verbindung an Anthropic gesendet. Ohne gültigen API-Key und aktive Verbindung wird keine KI-Anfrage ausgeführt.</li>
-            <li><strong>Training:</strong> Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer bei Feedback oder ausdrücklichem Opt-in.</li>
-          </ul>
-        </section>
-
-        <section class="manual-section">
-          <h3>Technische Voraussetzungen</h3>
-          <p>Die App läuft browserbasiert und kann auf Windows, macOS und anderen modernen Systemen genutzt werden. Deine fachlichen Inhalte können in diesem Browser gespeichert werden. Eine automatische Cloud-Synchronisierung der App-Inhalte ist in Version 1 nicht vorgesehen. Über Export und Import kannst du Daten sichern oder auf ein anderes System übertragen.</p>
-        </section>
-
-        <section class="manual-section">
-          <h3>Qualität verbessern</h3>
-          <ul class="manual-list">
-            <li>Klare Überschriften, Absätze und kopierbarer Text verbessern die Ergebnisse.</li>
-            <li>Unwichtige Anhänge, Inhaltsverzeichnisse oder doppelte Textpassagen vorab entfernen.</li>
-            <li>Für Management-Ergebnisse Zielgruppe Management, Ton Prägnant und Ausgabeformat Executive Summary wählen.</li>
-            <li>Für Entscheidungen Handlungsorientierung Entscheidung vorbereiten und Ausgabeformat Entscheidungsnotiz wählen.</li>
-            <li>Bei sehr langen Dokumenten zuerst Teilzusammenfassungen erstellen und danach eine Gesamtsynthese erzeugen.</li>
-          </ul>
-        </section>
-
-        <section class="manual-section">
-          <h3>Häufige Probleme</h3>
-          <ul class="manual-list">
-            <li><strong>Keine Verbindung:</strong> Prüfen, ob der API-Key vollständig gespeichert ist, das Anthropic-Konto API-Nutzung erlaubt, Guthaben oder Zahlungsart aktiv sind und die Internetverbindung funktioniert.</li>
-            <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder sehr schlecht lesbar. Wenn kein Text extrahiert wird, nutzt die App bei der Zusammenfassung die visuelle PDF-Analyse von Claude. Dafür sind API-Key und Internetverbindung erforderlich.</li>
-            <li><strong>Text zu groß:</strong> Quelle kürzen oder in Kapitel aufteilen. Maximal sind 180.000 Zeichen möglich.</li>
-            <li><strong>Ergebnis zu allgemein:</strong> Fokus, Zielgruppe, Vorlage und Handlungsorientierung konkreter einstellen.</li>
-            <li><strong>Profil fehlt:</strong> Eigene Profile werden in diesem Browser gespeichert. In einem anderen Browser oder nach gelöschtem Speicher sind sie nicht verfügbar.</li>
-          </ul>
-        </section>
+          <section class="manual-section" id="help-version" data-help-section>
+            <h3>Version & Hinweise</h3>
+            <ul class="manual-list">
+              <li>Die App ist als browserbasierte lokale KI-Arbeitsoberfläche ausgelegt, nicht als klassische Offline-Desktop-App.</li>
+              <li>Für Testphase, Kauf und Lizenzprüfung ist ein persönlicher Nutzerzugriff vorgesehen. Der Login kann einfach per E-Mail/Magic Link erfolgen.</li>
+              <li>Mehrere Lizenzen bedeuten mehrere getrennte Nutzerzugriffe, nicht einen gemeinsamen Cloud-Arbeitsbereich.</li>
+              <li>Andere Nutzer können nicht auf lokal gespeicherte Inhalte in deinem Browser zugreifen.</li>
+              <li>Über Export und Import kannst du Daten sichern oder übertragen.</li>
+              <li>Inhalte werden für KI-Funktionen an Anthropic übertragen. Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer bei Feedback oder ausdrücklichem Opt-in.</li>
+            </ul>
+          </section>
+          <p class="help-empty" id="helpEmpty" hidden>Keine passenden Hilfethemen gefunden.</p>
+        </div>
       </div>
     </section>
   </div>

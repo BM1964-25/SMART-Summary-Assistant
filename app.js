@@ -212,7 +212,13 @@ const elements = {
   historyList: document.querySelector("#historyList"),
   clearHistoryBtn: document.querySelector("#clearHistoryBtn"),
   statusText: document.querySelector("#statusText"),
-  statusDot: document.querySelector("#statusDot")
+  statusDot: document.querySelector("#statusDot"),
+  helpSearch: document.querySelector("#helpSearch"),
+  helpToggle: document.querySelector("#helpToggle"),
+  helpButton: document.querySelector(".help-button"),
+  helpClose: document.querySelector(".modal-close"),
+  helpSections: document.querySelectorAll("[data-help-section]"),
+  helpEmpty: document.querySelector("#helpEmpty")
 };
 
 init();
@@ -268,6 +274,9 @@ function bindEvents() {
   elements.viewModeButtons.forEach((button) => {
     button.addEventListener("click", () => setViewMode(button.dataset.viewMode));
   });
+  elements.helpSearch.addEventListener("input", filterHelpSections);
+  elements.helpButton.addEventListener("keydown", handleHelpButtonKeydown);
+  elements.helpClose.addEventListener("keydown", handleHelpCloseKeydown);
   elements.summarizeBtn.addEventListener("click", handleSummarize);
   elements.copyBtn.addEventListener("click", copySummary);
   elements.copyResultIconBtn.addEventListener("click", copySummary);
@@ -328,6 +337,33 @@ function bindEvents() {
     persistSettings();
     setKeyFeedback(elements.rememberKey.checked ? "Speicherung in diesem Browser aktiviert." : "Speicherung in diesem Browser deaktiviert.", "info");
   });
+}
+
+function filterHelpSections() {
+  const query = elements.helpSearch.value.trim().toLowerCase();
+  let visibleCount = 0;
+
+  elements.helpSections.forEach((section) => {
+    const matches = !query || section.textContent.toLowerCase().includes(query);
+    section.hidden = !matches;
+    if (matches) visibleCount += 1;
+  });
+
+  elements.helpEmpty.hidden = visibleCount > 0;
+}
+
+function handleHelpButtonKeydown(event) {
+  if (!["Enter", " "].includes(event.key)) return;
+
+  event.preventDefault();
+  elements.helpToggle.checked = !elements.helpToggle.checked;
+}
+
+function handleHelpCloseKeydown(event) {
+  if (!["Enter", " "].includes(event.key)) return;
+
+  event.preventDefault();
+  elements.helpToggle.checked = false;
 }
 
 function handleSaveLicense() {
