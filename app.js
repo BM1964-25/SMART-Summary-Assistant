@@ -156,6 +156,7 @@ const elements = {
   layout: document.querySelector(".layout"),
   viewModeButtons: document.querySelectorAll("[data-view-mode]"),
   sourceText: document.querySelector("#sourceText"),
+  clearSourceBtn: document.querySelector("#clearSourceBtn"),
   charCount: document.querySelector("#charCount"),
   textQuality: document.querySelector("#textQuality"),
   tokenEstimate: document.querySelector("#tokenEstimate"),
@@ -252,6 +253,7 @@ function bindEvents() {
     const hasText = elements.sourceText.value.trim().length > 0;
     setStatus(hasText ? "Text erkannt" : "Bereit", "ready");
   });
+  elements.clearSourceBtn.addEventListener("click", clearSourceContent);
 
   elements.pdfInput.addEventListener("change", (event) => {
     const file = event.target.files?.[0];
@@ -477,6 +479,16 @@ function handleFileDrop(event) {
   elements.dropZone.classList.remove("is-dragging");
   const file = event.dataTransfer?.files?.[0];
   if (file) processSelectedFile(file);
+}
+
+function clearSourceContent() {
+  elements.sourceText.value = "";
+  elements.pdfInput.value = "";
+  elements.pdfStatus.textContent = "Keine Datei ausgewählt";
+  clearVisualPdfState();
+  updateCharacterCount();
+  setStatus(apiKeyState.value ? "Bereit" : "API-Key fehlt", apiKeyState.value ? "ready" : "warn");
+  elements.sourceText.focus();
 }
 
 async function processSelectedFile(file) {

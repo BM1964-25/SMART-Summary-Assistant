@@ -63,8 +63,19 @@
           </div>
         </div>
 
-        <div class="workspace-resizer">
+        <div class="workspace-resizer source-resizer">
           <textarea id="sourceText" placeholder="Füge hier den zu analysierenden Text ein..." spellcheck="true"></textarea>
+          <div class="source-field-actions" aria-label="Quellen-Aktionen">
+            <button type="button" class="icon-button source-icon-button danger" id="clearSourceBtn" aria-label="Quelle löschen" title="Quelle löschen">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h16"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+                <path d="M6 7l1 13h10l1-13"></path>
+                <path d="M9 7V4h6v3"></path>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div class="source-insights" aria-label="Quellenanalyse">
