@@ -362,25 +362,41 @@ export async function requestClaudePdfSummary({
 }
 
 export async function testClaudeConnection({ apiKey, proxyUrl, model }) {
-  const response = await fetch(proxyUrl || "/api/anthropic/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey
-    },
-    body: JSON.stringify({
-      model: model || DEFAULT_MODEL,
-      max_tokens: 12,
-      temperature: 0,
-      system: "Antworte ausschließlich mit OK.",
-      messages: [
-        {
-          role: "user",
-          content: "Teste die Verbindung. Antworte nur mit OK."
-        }
-      ]
-    })
-  });
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 12000);
+  let response;
+
+  try {
+    response = await fetch(proxyUrl || "/api/anthropic/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: model || DEFAULT_MODEL,
+        max_tokens: 12,
+        temperature: 0,
+        system: "Antworte ausschließlich mit OK.",
+        messages: [
+          {
+            role: "user",
+            content: "Teste die Verbindung. Antworte nur mit OK."
+          }
+        ]
+      })
+    });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      const timeoutError = new Error("Verbindungstest dauert zu lange. Bitte lokalen Server, Internetverbindung und API-Key prüfen.");
+      timeoutError.code = "REQUEST_TIMEOUT";
+      throw timeoutError;
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 
   const payload = await response.json().catch(() => ({}));
 

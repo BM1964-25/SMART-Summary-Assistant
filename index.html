@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SMART Summary Assistant</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260529-workflow-status">
 </head>
 <body>
   <input type="checkbox" class="help-toggle" id="helpToggle" aria-hidden="true">
@@ -34,19 +34,19 @@
       <section class="workflow-panel" aria-label="Arbeitsablauf">
         <p class="workflow-intro">Verwandle umfangreiche Dokumente in klare Zusammenfassungen, Entscheidungsgrundlagen und nächste Schritte.</p>
 
-        <div class="workflow-step">
+        <div class="workflow-step" data-workflow-step="access">
           <span class="step-number">01</span>
           <strong>KI-Zugang einrichten</strong>
         </div>
-        <div class="workflow-step">
+        <div class="workflow-step" data-workflow-step="source">
           <span class="step-number">02</span>
           <strong>Quelle erfassen</strong>
         </div>
-        <div class="workflow-step">
+        <div class="workflow-step" data-workflow-step="settings">
           <span class="step-number">03</span>
           <strong>Zusammenfassung steuern</strong>
         </div>
-        <div class="workflow-step">
+        <div class="workflow-step" data-workflow-step="result">
           <span class="step-number">04</span>
           <strong>Ergebnis nutzen</strong>
         </div>
@@ -300,47 +300,18 @@
         <summary class="panel-heading compact api-panel-toggle">
           <div>
             <h2>Zugriff, Lizenz & Datenschutz</h2>
-            <p>Lizenz, Anthropic-Verbindung und Verarbeitungshinweise.</p>
+            <p>Login, Trial, Lizenz, KI-Guthaben und eigener API-Key.</p>
           </div>
           <span class="api-panel-summary">
             <span class="chevron" aria-hidden="true">▾</span>
           </span>
         </summary>
 
-        <details class="api-key-card license-card" aria-labelledby="licenseTitle">
-          <summary class="api-key-toggle">
-            <div>
-              <h3 id="licenseTitle">Lizenz verwalten</h3>
-              <p>Lizenzschlüssel speichern und prüfen.</p>
-            </div>
-            <span class="api-key-summary">
-              <span class="connection-badge" id="licenseBadge">Nicht aktiviert</span>
-              <span class="chevron" aria-hidden="true">▾</span>
-            </span>
-          </summary>
-
-          <div class="api-key-details">
-            <div class="field api-field">
-              <label for="licenseKey">Lizenzschlüssel</label>
-              <input id="licenseKey" type="text" autocomplete="off" placeholder="SMART-XXXX-XXXX-XXXX">
-              <p class="field-help">Nach dem Kauf oder Start der Testphase wird dein persönlicher Lizenzschlüssel hier hinterlegt und sicher geprüft.</p>
-            </div>
-            <div class="api-action-row license-action-row">
-              <div class="api-actions license-actions">
-                <button type="button" id="saveLicenseBtn">Lizenz speichern</button>
-                <button type="button" id="verifyLicenseBtn">Lizenz prüfen</button>
-                <button type="button" id="useDemoLicenseBtn">Demo-Lizenz</button>
-              </div>
-              <div class="key-feedback" id="licenseFeedback" role="status" aria-live="polite">Noch keine Lizenz gespeichert.</div>
-            </div>
-          </div>
-        </details>
-
-        <details class="api-key-card" id="apiKeyCard" aria-labelledby="apiKeyTitle">
+        <details class="api-key-card own-key-card" id="apiKeyCard" aria-labelledby="apiKeyTitle">
           <summary class="api-key-toggle" id="apiKeyToggle">
             <div>
-              <h3 id="apiKeyTitle">API-Key verwalten</h3>
-              <p>Schlüssel im Browser verwalten und Verbindung testen.</p>
+              <h3 id="apiKeyTitle">KI-Zugang einrichten</h3>
+              <p>BuiltSmart AI Guthaben nutzen oder optional eigenen API-Key lokal aktivieren.</p>
             </div>
             <span class="api-key-summary">
               <span class="connection-badge" id="connectionBadge">Nicht verbunden</span>
@@ -349,40 +320,163 @@
           </summary>
 
           <div class="api-key-details" id="apiKeyDetails">
-            <div class="field api-field">
-              <label for="apiKey">API-Schlüssel</label>
-              <div class="secret-row">
-                <input id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-...">
-                <button type="button" class="icon-button eye-button" id="toggleKey" aria-label="API-Key anzeigen" aria-pressed="false">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M2.2 12s3.6-6.5 9.8-6.5S21.8 12 21.8 12 18.2 18.5 12 18.5 2.2 12 2.2 12Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </button>
-              </div>
-              <p class="field-help" id="keyHint">Der Key wird verborgen angezeigt. Zum Bearbeiten Feld aktivieren oder das Auge nutzen.</p>
-            </div>
+            <div class="ai-choice-grid" aria-label="KI-Zugangswege">
+              <article class="ai-choice-card" id="builtSmartAiChoice">
+                <div class="ai-choice-copy">
+                  <span>Option 1</span>
+                  <h4>BuiltSmart AI Guthaben</h4>
+                  <p>Du kaufst BuiltSmart AI Guthaben und nutzt die KI, bis das Guthaben verbraucht ist. Kein eigener Anthropic API-Key nötig.</p>
+                </div>
+                <div class="ai-choice-status">
+                  <strong id="aiBalanceStatus">Nicht geprüft</strong>
+                </div>
+                <div class="ai-choice-actions">
+                  <button type="button" id="aiCreditCheckoutBtn">Guthaben kaufen</button>
+                  <button type="button" id="refreshAiCreditBtn">Status aktualisieren</button>
+                </div>
+                <div class="key-feedback ai-credit-feedback" id="aiCreditFeedback" role="status" aria-live="polite">Login erforderlich, damit Guthaben deinem Nutzerzugriff zugeordnet werden kann.</div>
+              </article>
+              <article class="ai-choice-card" id="ownApiChoice">
+                <div class="ai-choice-copy">
+                  <span>Option 2</span>
+                  <h4>Eigener Anthropic API-Key</h4>
+                  <p>Du nutzt deinen eigenen Anthropic API-Key. Abrechnung und Nutzung laufen dann über dein Anthropic-Konto.</p>
+                </div>
+                <div class="ai-choice-status">
+                  <strong id="aiModeStatus">BuiltSmart AI</strong>
+                </div>
 
-            <label class="check-row">
-              <input id="rememberKey" type="checkbox">
-              <span>API-Key in diesem Browser speichern</span>
-            </label>
+                <div class="field api-field own-api-field">
+                  <label for="apiKey">Eigener Anthropic API-Key</label>
+                  <div class="secret-row">
+                    <input id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-...">
+                    <button type="button" class="icon-button eye-button" id="toggleKey" aria-label="API-Key anzeigen" aria-pressed="false">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2.2 12s3.6-6.5 9.8-6.5S21.8 12 21.8 12 18.2 18.5 12 18.5 2.2 12 2.2 12Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    <button type="button" class="icon-button eye-button clear-api-key-button" id="clearApiKeyBtn" aria-label="API-Key löschen" title="API-Key löschen">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 6h18"></path>
+                        <path d="M8 6V4h8v2"></path>
+                        <path d="M6.5 6l1 14h9l1-14"></path>
+                        <path d="M10 10v6"></path>
+                        <path d="M14 10v6"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="field-help" id="keyHint">Der Key wird verborgen angezeigt. Zum Bearbeiten Feld aktivieren, das Auge nutzen oder per Papierkorb löschen.</p>
+                </div>
 
-            <div class="api-action-row">
-              <div class="api-actions">
-                <button type="button" id="saveKeyBtn">Speichern</button>
-                <button type="button" id="connectBtn">Verbindung</button>
-                <button type="button" id="testConnectionBtn">Verbindung überprüfen</button>
-                <button type="button" id="disconnectBtn">Verbindung trennen</button>
-              </div>
+                <label class="check-row">
+                  <input id="rememberKey" type="checkbox">
+                  <span>API-Key lokal in diesem Browser speichern</span>
+                </label>
 
-              <div class="key-feedback" id="keyFeedback" role="status" aria-live="polite">Noch kein API-Key gespeichert.</div>
+                <label class="check-row">
+                  <input id="useOwnApiKey" type="checkbox">
+                  <span>Option 2 aktivieren: eigenen API-Key für KI-Anfragen verwenden</span>
+                </label>
+
+                <div class="api-action-row own-api-action-row">
+                  <div class="api-actions own-api-actions">
+                    <button type="button" id="saveKeyBtn">Speichern</button>
+                    <button type="button" id="connectBtn">Verbindung</button>
+                    <button type="button" id="testConnectionBtn">Verbindung prüfen</button>
+                    <button type="button" id="disconnectBtn">Verbindung trennen</button>
+                  </div>
+
+                  <div class="key-feedback" id="keyFeedback" role="status" aria-live="polite">Noch kein API-Key gespeichert.</div>
+                </div>
+              </article>
             </div>
 
             <div class="privacy-note">
               <strong>Datenschutz-Hinweis</strong>
-              <p>Der API-Key wird nur in diesem Browser gespeichert, sofern du die Speicherung aktivierst. Inhalte werden für die KI-Zusammenfassung an Anthropic übertragen. Laut Anthropic werden API-Eingaben und -Ausgaben nicht zum Training generativer Modelle verwendet, außer du übermittelst Inhalte ausdrücklich als Feedback oder stimmst einer Nutzung zur Modellverbesserung zu. Verarbeite vertrauliche oder personenbezogene Daten nur, wenn dies fachlich und rechtlich zulässig ist.</p>
+              <p>Standardmäßig nutzt die App BuiltSmart AI Guthaben. Wenn du eigenen API-Key aktivierst, werden KI-Anfragen über den lokalen Proxy an Anthropic gesendet und nicht über BuiltSmart AI Guthaben abgerechnet.</p>
             </div>
+          </div>
+        </details>
+
+        <details class="api-key-card access-card" id="builtSmartAccessCard" aria-labelledby="builtSmartAccessTitle">
+          <summary class="api-key-toggle">
+            <div>
+              <h3 id="builtSmartAccessTitle">Lizenz & Nutzerzugriff</h3>
+              <p>Magic-Link Login, 3-Tage-Trial, Jahreslizenz und Lizenzschlüssel.</p>
+            </div>
+            <span class="api-key-summary">
+              <span class="connection-badge" id="accessBadge">Nicht eingeloggt</span>
+              <span class="chevron" aria-hidden="true">▾</span>
+            </span>
+          </summary>
+
+          <div class="api-key-details">
+            <div class="access-status-grid" aria-label="BuiltSmart Zugriffsstatus">
+              <div>
+                <span>Nutzerzugriff</span>
+                <strong id="userStatus">Nicht eingeloggt</strong>
+              </div>
+              <div>
+                <span>App-Zugriff</span>
+                <strong id="appAccessStatus">Nicht geprüft</strong>
+              </div>
+            </div>
+
+            <div class="field api-field">
+              <label for="loginEmail">E-Mail für Magic Link</label>
+              <input id="loginEmail" type="email" autocomplete="email" placeholder="name@example.com">
+              <p class="field-help">Trial-Start und Kauf sind erst nach Login möglich. Der Magic Link wird an diese E-Mail-Adresse gesendet.</p>
+            </div>
+
+            <div class="api-action-row license-action-row">
+              <div class="api-actions access-actions">
+                <button type="button" id="sendMagicLinkBtn">Magic Link senden</button>
+                <button type="button" id="logoutBtn">Logout</button>
+                <button type="button" id="refreshAccessBtn">Status aktualisieren</button>
+                <button type="button" id="startTrialBtn">3 Tage testen</button>
+                <button type="button" id="checkoutBtn">Jahreslizenz kaufen</button>
+              </div>
+              <div class="key-feedback" id="accessFeedback" role="status" aria-live="polite">Noch nicht mit BuiltSmart verbunden.</div>
+            </div>
+
+            <div class="field api-field license-code-field">
+              <label for="licenseCode">Lizenzschlüssel vorhanden? Hier aktivieren.</label>
+              <div class="license-code-row">
+                <input id="licenseCode" type="text" autocomplete="off" placeholder="Lizenzschlüssel eingeben">
+                <button type="button" id="redeemLicenseBtn">Aktivieren</button>
+              </div>
+              <p class="field-help">Der Lizenzschlüssel aktiviert die App-Nutzung für deinen eingeloggten persönlichen Nutzerzugriff.</p>
+            </div>
+
+            <div class="privacy-note">
+              <strong>Getrennte Datenbereiche</strong>
+              <p>Lokale App-Inhalte, Verlauf und Profile bleiben in diesem Browser. Lizenzdaten, Login-Session und KI-Guthaben werden getrennt über BuiltSmart/Supabase verwaltet. Eigene API-Keys werden nur lokal gespeichert und nicht exportiert.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="api-key-card backup-card" aria-labelledby="backupTitle">
+          <summary class="api-key-toggle">
+            <div>
+              <h3 id="backupTitle">Lokale Daten sichern</h3>
+              <p>App-Inhalte exportieren oder importieren, ohne Lizenzdaten und API-Keys.</p>
+            </div>
+            <span class="api-key-summary">
+              <span class="connection-badge">Lokal</span>
+              <span class="chevron" aria-hidden="true">▾</span>
+            </span>
+          </summary>
+
+          <div class="api-key-details">
+            <div class="api-action-row">
+              <div class="api-actions backup-actions">
+                <button type="button" id="exportAppDataBtn">JSON exportieren</button>
+                <button type="button" id="importAppDataBtn">JSON importieren</button>
+              </div>
+              <div class="key-feedback" id="backupFeedback" role="status" aria-live="polite">Export enthält Quelle, Ergebnis, Verlauf, Profile und Einstellungen. Keine Lizenzdaten, keine Session, keine API-Keys.</div>
+            </div>
+            <input id="importAppDataInput" type="file" accept="application/json,.json" hidden>
           </div>
         </details>
       </details>
@@ -449,35 +543,53 @@
 
           <section class="manual-section" id="help-access" data-help-section>
             <h3>Einrichtung & Zugang</h3>
-            <p>Die App benötigt zwei getrennte Zugänge: den Lizenzschlüssel für die App-Nutzung und den Anthropic API-Key für die KI-Funktionen.</p>
+            <p>Die App nutzt das zentrale BuiltSmart Modell: persönlicher Login per E-Mail/Magic Link, 3 Tage Trial mit 5 KI-Testanfragen, Jahreslizenz nach dem Trial und getrennte KI-Nutzung über BuiltSmart AI Guthaben oder optional eigenen API-Key.</p>
             <div class="manual-callout">
-              <p><strong>Lizenzschlüssel und API-Key erfüllen unterschiedliche Aufgaben:</strong></p>
-              <p>Der Lizenzschlüssel aktiviert die Nutzung dieser App. Er bestätigt, dass Sie berechtigt sind, die Software zu verwenden.</p>
-              <p>Der API-Key verbindet die App mit Ihrem Anthropic-Konto. Er ist erforderlich, damit KI-Funktionen ausgeführt werden können. Auch bei einer bezahlten App-Lizenz wird ein eigener API-Key benötigt, weil die Nutzung der KI-Modelle technisch und abrechnungstechnisch getrennt über Anthropic erfolgt.</p>
+              <p><strong>Lizenz, BuiltSmart AI Guthaben und eigener API-Key erfüllen unterschiedliche Aufgaben:</strong></p>
+              <p>Der Login ordnet Trial, Lizenz und KI-Guthaben deinem persönlichen Nutzerzugriff zu. Der Lizenzschlüssel oder die Jahreslizenz aktiviert die Nutzung dieser App.</p>
+              <p>KI-Anfragen können über BuiltSmart AI Guthaben laufen. Alternativ kannst du bewusst einen eigenen Anthropic API-Key lokal im Browser hinterlegen. Dieser eigene API-Key ersetzt nicht die App-Lizenz, sondern nur den KI-Ausführungsweg.</p>
             </div>
-            <h4>Lizenzschlüssel aktivieren</h4>
+            <h4>Login per Magic Link</h4>
             <ol class="manual-steps compact">
               <li>Öffne die Kachel <strong>Zugriff, Lizenz & Datenschutz</strong>.</li>
-              <li>Klappe <strong>Lizenz verwalten</strong> auf und trage den Lizenzschlüssel in das Feld <strong>Lizenzschlüssel</strong> ein.</li>
-              <li>Klicke auf <strong>Lizenz speichern</strong> und danach auf <strong>Lizenz prüfen</strong>.</li>
-              <li>Der Lizenzschlüssel wird nach Kauf, Testphase oder interner Freischaltung benötigt und aktiviert die berechtigte Nutzung dieser App.</li>
-              <li>Der Lizenzschlüssel schaltet die App-Nutzung frei, ersetzt aber nicht den Anthropic API-Key.</li>
+              <li>Klappe <strong>Lizenz & Nutzerzugriff</strong> auf.</li>
+              <li>Trage deine E-Mail-Adresse ein und klicke auf <strong>Magic Link senden</strong>.</li>
+              <li>Öffne die E-Mail und bestätige den Login. Danach wird dein persönlicher Nutzerzugriff in der App erkannt.</li>
             </ol>
-            <h4>API-Key erstellen</h4>
+            <h4>Trial starten</h4>
+            <ol class="manual-steps compact">
+              <li>Logge dich zuerst per Magic Link ein.</li>
+              <li>Klicke auf <strong>3 Tage testen</strong>, sofern der Trial verfügbar ist.</li>
+              <li>Der Trial enthält 5 BuiltSmart AI Testanfragen.</li>
+              <li>Nach Ablauf ist eine Jahreslizenz erforderlich.</li>
+            </ol>
+            <h4>Lizenzschlüssel aktivieren</h4>
+            <ol class="manual-steps compact">
+              <li>Logge dich zuerst per Magic Link ein.</li>
+              <li>Trage den Lizenzschlüssel im Feld <strong>Lizenzschlüssel vorhanden? Hier aktivieren.</strong> ein.</li>
+              <li>Klicke auf <strong>Aktivieren</strong>.</li>
+              <li>Der Lizenzschlüssel schaltet die App-Nutzung für deinen persönlichen Nutzerzugriff frei.</li>
+              <li>Der Lizenzschlüssel ersetzt weder BuiltSmart AI Guthaben noch einen optionalen eigenen API-Key.</li>
+            </ol>
+            <h4>Jahreslizenz kaufen</h4>
+            <p>Nach Login kannst du über <strong>Jahreslizenz kaufen</strong> den zentralen Checkout öffnen. Die Jahreslizenz gilt 12 Monate und verlängert sich automatisch. Mehrere Lizenzen derselben App sind möglich; pro Lizenz ist ein persönlicher Nutzerzugriff vorgesehen.</p>
+            <h4>BuiltSmart AI Guthaben kaufen</h4>
+            <p>Wenn du keinen eigenen Anthropic API-Key verwenden möchtest, nutzt du <strong>Option 1 · BuiltSmart AI Guthaben</strong>. Nach Login kannst du über <strong>Guthaben kaufen</strong> den zentralen Checkout für KI-Guthaben öffnen, sobald der passende Guthaben-Plan im zentralen BuiltSmart Backend bereitsteht. Das Guthaben wird deinem persönlichen Nutzerzugriff zugeordnet.</p>
+            <h4>Optional eigenen API-Key erstellen</h4>
             <ol class="manual-steps compact">
               <li>Öffne die Anthropic Console unter <strong>console.anthropic.com</strong>.</li>
               <li>Erstelle ein Anthropic-Konto oder logge dich in dein bestehendes Konto ein.</li>
               <li>Öffne den Bereich <strong>API Keys</strong>.</li>
-              <li>Erstelle einen neuen API-Key für diese App.</li>
+              <li>Erstelle einen neuen API-Key.</li>
               <li>Kopiere den vollständigen API-Key direkt nach der Erstellung.</li>
-              <li>Öffne in der App <strong>Zugriff, Lizenz & Datenschutz</strong>, klappe <strong>API-Key verwalten</strong> auf und trage den Schlüssel in das Feld <strong>API-Schlüssel</strong> ein.</li>
-              <li>Klicke auf <strong>Speichern</strong> und anschließend auf <strong>Verbindung überprüfen</strong>.</li>
+              <li>Öffne in der App <strong>Option 2 · Eigener Anthropic API-Key</strong> und trage den Schlüssel in das Feld <strong>Eigener Anthropic API-Key</strong> ein.</li>
+              <li>Aktiviere <strong>Eigenen API-Key für KI-Anfragen verwenden</strong>, wenn die KI-Ausführung nicht über BuiltSmart AI Guthaben laufen soll.</li>
             </ol>
             <p><strong>Wichtig:</strong> Der API-Key wird häufig nur einmal vollständig angezeigt. Speichere ihn sicher und teile ihn nicht mit anderen Personen.</p>
-            <h4>Warum ein API-Key erforderlich ist</h4>
-            <p>Die App nutzt KI-Funktionen über die Anthropic API. Der API-Key verbindet die App mit deinem persönlichen Anthropic-Konto. Dadurch werden KI-Anfragen deinem eigenen Anthropic-Konto zugeordnet. Ohne gültigen API-Key können KI-Funktionen nicht ausgeführt werden.</p>
-            <h4>Warum auch bei bezahltem App-Abo ein API-Key nötig ist</h4>
-            <p>App-Lizenz beziehungsweise App-Abo und KI-Nutzung sind getrennt. Die App-Lizenz bezahlt die Nutzung der Software. Die Anthropic API-Nutzung wird separat über dein Anthropic-Konto verarbeitet beziehungsweise abgerechnet. Deshalb ist auch bei bezahlter App-Lizenz ein eigener API-Key erforderlich.</p>
+            <h4>Warum KI-Guthaben oder API-Key erforderlich ist</h4>
+            <p>Die App nutzt KI-Funktionen für Zusammenfassungen. Dafür ist entweder BuiltSmart AI Guthaben erforderlich oder ein eigener API-Key, den du lokal im Browser hinterlegst. Vor jeder KI-Aktion wird der voraussichtliche Verbrauch angezeigt und muss bestätigt werden.</p>
+            <h4>Warum auch bei bezahltem App-Abo KI-Nutzung getrennt ist</h4>
+            <p>App-Lizenz beziehungsweise App-Abo und KI-Nutzung sind getrennt. Die App-Lizenz bezahlt die Nutzung der Software. Die KI-Nutzung läuft separat über BuiltSmart AI Guthaben oder über dein eigenes Anthropic-Konto, wenn du den eigenen API-Key aktivierst.</p>
             <h4>Warum Anthropic verwendet wird</h4>
             <p>Anthropic wurde gewählt, weil Claude-Modelle stark bei strukturiertem Arbeiten, Textanalyse, Zusammenfassungen und professionellen Workflows sind. Claude eignet sich gut für längere Dokumente, komplexe Eingaben und nachvollziehbare Ausgaben. Anthropic legt großen Wert auf Sicherheit, Zuverlässigkeit und verantwortungsvolle KI-Nutzung. Die API ermöglicht eine stabile Integration in professionelle Anwendungen. Über den eigenen API-Key behältst du Kontrolle über Nutzung und Abrechnung.</p>
           </section>
@@ -485,8 +597,9 @@
           <section class="manual-section" id="help-quickstart" data-help-section>
             <h3>Schnellstart</h3>
             <ol class="manual-steps">
-              <li><strong>Lizenzschlüssel aktivieren:</strong> Öffne Einrichtung & Zugang, speichere den Lizenzschlüssel und prüfe die Lizenz.</li>
-              <li><strong>API-Key eintragen:</strong> Erstelle den Anthropic API-Key, trage ihn ein, speichere ihn und prüfe die Verbindung.</li>
+              <li><strong>Einloggen:</strong> Öffne Einrichtung & Zugang, sende den Magic Link und bestätige den Login per E-Mail.</li>
+              <li><strong>Trial oder Lizenz aktivieren:</strong> Starte den 3-Tage-Trial, löse einen Lizenzschlüssel ein oder kaufe eine Jahreslizenz.</li>
+              <li><strong>KI-Modus wählen:</strong> Nutze BuiltSmart AI Guthaben, kaufe bei Bedarf Guthaben nach oder aktiviere optional einen eigenen API-Key.</li>
               <li><strong>Erste Eingaben machen:</strong> Füge Text in das Quellenfeld ein oder importiere eine Datei per Drag & Drop oder Datei auswählen.</li>
               <li><strong>Zusammenfassung einstellen:</strong> Wähle Profil, Vorlage, Zielgruppe, Fokus, Länge und Ausgabeformat.</li>
               <li><strong>Analyse starten:</strong> Klicke auf <strong>Zusammenfassung erstellen</strong>.</li>
@@ -502,7 +615,7 @@
               <div><dt>Ergebnis</dt><dd>Hier erscheint die KI-Zusammenfassung. Die Icons im Ergebnisfeld kopieren oder löschen nur das Ergebnis.</dd></div>
               <div><dt>Ansichten</dt><dd>Mit Quelle, Ergebnis und Geteilt wechselst du zwischen Eingabe, Ausgabe und paralleler Arbeitsansicht.</dd></div>
               <div><dt>Lokaler Verlauf</dt><dd>Speichert maximal 20 Zusammenfassungen in diesem Browser und kann jederzeit geleert werden.</dd></div>
-              <div><dt>Zugriff, Lizenz & Datenschutz</dt><dd>Enthält Lizenzprüfung, API-Key-Verwaltung, Verbindungstest und Datenschutzinformationen.</dd></div>
+              <div><dt>Zugriff, Lizenz & Datenschutz</dt><dd>Enthält Magic-Link-Login, Trial, Jahreslizenz, Lizenzschlüssel, KI-Guthaben, eigenen API-Key und lokale Datensicherung.</dd></div>
             </dl>
           </section>
 
@@ -521,7 +634,7 @@
           <section class="manual-section" id="help-workflow" data-help-section>
             <h3>Typischer Workflow</h3>
             <ol class="manual-steps">
-              <li><strong>KI-Zugang einrichten:</strong> Lizenz aktivieren und API-Key verbinden.</li>
+              <li><strong>KI-Zugang einrichten:</strong> Per Magic Link einloggen, Trial oder Lizenz aktivieren und KI-Modus wählen.</li>
               <li><strong>Quelle erfassen:</strong> Dokument importieren oder Text einfügen und kurz auf Lesbarkeit prüfen.</li>
               <li><strong>Zusammenfassung steuern:</strong> Profil oder manuelle Parameter passend zum Zweck wählen.</li>
               <li><strong>Ergebnis nutzen:</strong> Zusammenfassung prüfen, bei Bedarf Parameter nachschärfen und exportieren.</li>
@@ -561,10 +674,14 @@
           <section class="manual-section" id="help-errors" data-help-section>
             <h3>Fehler & Lösungen</h3>
             <ul class="manual-list">
-              <li><strong>Keine Verbindung:</strong> Prüfe, ob der API-Key vollständig gespeichert ist, das Anthropic-Konto API-Nutzung erlaubt, Guthaben oder Zahlungsart aktiv sind und die Internetverbindung funktioniert.</li>
+              <li><strong>Nicht eingeloggt:</strong> Sende einen Magic Link und bestätige den Login per E-Mail.</li>
+              <li><strong>Trial abgelaufen:</strong> Aktiviere einen Lizenzschlüssel oder kaufe eine Jahreslizenz.</li>
+              <li><strong>Kein KI-Guthaben:</strong> Kaufe beziehungsweise lade BuiltSmart AI Guthaben nach oder nutze bewusst einen eigenen API-Key.</li>
+              <li><strong>Zentrale Konfiguration fehlt:</strong> Supabase URL, Supabase Anon Key und Function URLs müssen app-spezifisch hinterlegt sein.</li>
+              <li><strong>Keine Verbindung mit eigenem API-Key:</strong> Prüfe, ob der API-Key vollständig gespeichert ist, das Anthropic-Konto API-Nutzung erlaubt, Guthaben oder Zahlungsart aktiv sind und die Internetverbindung funktioniert.</li>
               <li><strong>API-Key ungültig:</strong> Erstelle in der Anthropic Console einen neuen API-Key und trage ihn erneut ein.</li>
-              <li><strong>Lizenz nicht aktiv:</strong> Prüfe Schreibweise, Leerzeichen und ob der Lizenzschlüssel zum Produkt gehört. Für Tests kann die Demo-Lizenz SMART-DEMO-2026-LOCAL verwendet werden.</li>
-              <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder schlecht lesbar. Die visuelle PDF-Analyse von Claude kann helfen, benötigt aber API-Key und Internetverbindung.</li>
+              <li><strong>Lizenz nicht aktiv:</strong> Prüfe, ob du eingeloggt bist und ob der Lizenzschlüssel zum Produkt gehört.</li>
+              <li><strong>Leeres PDF-Ergebnis:</strong> Das PDF ist wahrscheinlich gescannt oder schlecht lesbar. Die visuelle PDF-Analyse von Claude kann helfen und benötigt eine freigegebene KI-Nutzung.</li>
               <li><strong>Text zu groß:</strong> Kürze die Quelle oder teile das Dokument in Kapitel auf. Maximal sind 180.000 Zeichen vorgesehen.</li>
               <li><strong>Ergebnis zu allgemein:</strong> Wähle konkretere Werte für Fokus, Zielgruppe, Vorlage und Handlungsorientierung.</li>
               <li><strong>405 oder API-Fehler:</strong> Starte die App über den lokalen Server beziehungsweise Launcher, damit KI-Anfragen über den lokalen Proxy gesendet werden.</li>

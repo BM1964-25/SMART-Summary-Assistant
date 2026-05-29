@@ -2,13 +2,23 @@ import { requestClaudePdfSummary, requestClaudeSummary, testClaudeConnection } f
 import { extractTextFromPdf } from "./pdfExtractor.js";
 import { extractTextFromDocx } from "./docxExtractor.js";
 import {
-  clearLicenseSession,
-  loadStoredLicense,
-  normalizeLicenseKey,
-  saveLicenseKey,
-  setLicenseSessionActive,
-  verifyLicenseKey
-} from "./licenseClient.js";
+  BUILTSMART_CONFIG,
+  checkAppAccess,
+  createCheckoutSession,
+  estimateAiUsage,
+  getAiCreditBalance,
+  getBuiltSmartConfigStatus,
+  getCurrentUser,
+  getOwnApiKey,
+  getOwnApiKeyStatus,
+  loginWithMagicLink,
+  logout,
+  redeemLicenseCode,
+  removeOwnApiKey,
+  runAiAction,
+  saveOwnApiKey,
+  startTrial
+} from "./builtsmartLicense.js";
 
 const MAX_CHARS = 180000;
 const RECOMMENDED_CHARS = 100000;
@@ -16,10 +26,10 @@ const STORAGE_KEY = "smart-summary-anthropic-key";
 const SESSION_KEY = "smart-summary-session-active";
 const HISTORY_KEY = "smart-summary-history";
 const PROFILE_KEY = "smart-summary-profiles";
+const SETTINGS_KEY = "smart-summary-settings";
 const MAX_HISTORY_ITEMS = 20;
 const DEFAULT_PROXY_URL = resolveLocalProxyUrl("/api/anthropic/messages");
 const DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514";
-const DEMO_LICENSE_KEY = "SMART-DEMO-2026-LOCAL";
 const DEMO_SOURCE_TEXT = [
   "Projektstatus SMART Kundenportal - Lenkungskreis 20.05.2026",
   "",
@@ -139,10 +149,17 @@ const apiKeyState = {
   busyAction: ""
 };
 
-const licenseState = {
-  key: "",
-  active: false,
-  isBusy: false
+const builtSmartState = {
+  user: null,
+  access: null,
+  aiBalance: null,
+  isBusy: false,
+  busyAction: "",
+  configStatus: getBuiltSmartConfigStatus()
+};
+
+const workflowState = {
+  settingsTouched: false
 };
 
 const visualPdfState = {
@@ -171,6 +188,7 @@ const elements = {
   apiKey: document.querySelector("#apiKey"),
   rememberKey: document.querySelector("#rememberKey"),
   toggleKey: document.querySelector("#toggleKey"),
+  clearApiKeyBtn: document.querySelector("#clearApiKeyBtn"),
   apiKeyCard: document.querySelector("#apiKeyCard"),
   apiKeyDetails: document.querySelector("#apiKeyDetails"),
   keyHint: document.querySelector("#keyHint"),
@@ -180,12 +198,29 @@ const elements = {
   connectBtn: document.querySelector("#connectBtn"),
   testConnectionBtn: document.querySelector("#testConnectionBtn"),
   disconnectBtn: document.querySelector("#disconnectBtn"),
-  licenseKey: document.querySelector("#licenseKey"),
-  saveLicenseBtn: document.querySelector("#saveLicenseBtn"),
-  verifyLicenseBtn: document.querySelector("#verifyLicenseBtn"),
-  useDemoLicenseBtn: document.querySelector("#useDemoLicenseBtn"),
-  licenseBadge: document.querySelector("#licenseBadge"),
-  licenseFeedback: document.querySelector("#licenseFeedback"),
+  useOwnApiKey: document.querySelector("#useOwnApiKey"),
+  builtSmartAccessCard: document.querySelector("#builtSmartAccessCard"),
+  loginEmail: document.querySelector("#loginEmail"),
+  sendMagicLinkBtn: document.querySelector("#sendMagicLinkBtn"),
+  logoutBtn: document.querySelector("#logoutBtn"),
+  refreshAccessBtn: document.querySelector("#refreshAccessBtn"),
+  startTrialBtn: document.querySelector("#startTrialBtn"),
+  checkoutBtn: document.querySelector("#checkoutBtn"),
+  aiCreditCheckoutBtn: document.querySelector("#aiCreditCheckoutBtn"),
+  refreshAiCreditBtn: document.querySelector("#refreshAiCreditBtn"),
+  licenseCode: document.querySelector("#licenseCode"),
+  redeemLicenseBtn: document.querySelector("#redeemLicenseBtn"),
+  accessBadge: document.querySelector("#accessBadge"),
+  userStatus: document.querySelector("#userStatus"),
+  appAccessStatus: document.querySelector("#appAccessStatus"),
+  aiBalanceStatus: document.querySelector("#aiBalanceStatus"),
+  aiModeStatus: document.querySelector("#aiModeStatus"),
+  aiCreditFeedback: document.querySelector("#aiCreditFeedback"),
+  accessFeedback: document.querySelector("#accessFeedback"),
+  exportAppDataBtn: document.querySelector("#exportAppDataBtn"),
+  importAppDataBtn: document.querySelector("#importAppDataBtn"),
+  importAppDataInput: document.querySelector("#importAppDataInput"),
+  backupFeedback: document.querySelector("#backupFeedback"),
   profileSelect: document.querySelector("#profileSelect"),
   applyProfileBtn: document.querySelector("#applyProfileBtn"),
   saveProfileBtn: document.querySelector("#saveProfileBtn"),
@@ -218,16 +253,16 @@ const elements = {
   helpButton: document.querySelector(".help-button"),
   helpClose: document.querySelector(".modal-close"),
   helpSections: document.querySelectorAll("[data-help-section]"),
-  helpEmpty: document.querySelector("#helpEmpty")
+  helpEmpty: document.querySelector("#helpEmpty"),
+  workflowSteps: document.querySelectorAll("[data-workflow-step]"),
+  builtSmartAiChoice: document.querySelector("#builtSmartAiChoice"),
+  ownApiChoice: document.querySelector("#ownApiChoice")
 };
 
 init();
 
 function init() {
   const savedKey = localStorage.getItem(STORAGE_KEY);
-  const savedLicense = loadStoredLicense();
-  licenseState.key = savedLicense.key;
-  licenseState.active = savedLicense.active;
 
   const hasSavedKey = Boolean(savedKey && isPlausibleApiKey(savedKey));
 
@@ -242,10 +277,13 @@ function init() {
 
   updateCharacterCount();
   bindEvents();
+  loadSavedSettings();
   setViewMode(getDefaultViewMode());
   renderProfiles();
   renderApiKeyComponent();
-  renderLicenseComponent();
+  renderBuiltSmartAccess();
+  updateWorkflowState();
+  refreshBuiltSmartAccess({ silent: true });
   renderHistory();
   setApiKeyPanelOpen(false);
   setKeyFeedback(hasSavedKey ? "Gespeicherter API-Key geladen." : "Noch kein gültiger API-Key gespeichert.", hasSavedKey ? "success" : "info");
@@ -288,13 +326,19 @@ function bindEvents() {
   elements.resetBtn.addEventListener("click", resetWorkspace);
   elements.historyList.addEventListener("click", handleHistoryClick);
   elements.clearHistoryBtn.addEventListener("click", clearHistory);
-  elements.saveKeyBtn.addEventListener("click", handleSaveKey);
-  elements.connectBtn.addEventListener("click", handleConnect);
-  elements.testConnectionBtn.addEventListener("click", handleConnectionTest);
-  elements.disconnectBtn.addEventListener("click", handleDisconnect);
-  elements.saveLicenseBtn.addEventListener("click", handleSaveLicense);
-  elements.verifyLicenseBtn.addEventListener("click", handleVerifyLicense);
-  elements.useDemoLicenseBtn.addEventListener("click", useDemoLicense);
+  elements.apiKeyDetails.addEventListener("click", handleApiKeyActionClick);
+  elements.useOwnApiKey.addEventListener("change", handleOwnApiModeChange);
+  elements.sendMagicLinkBtn.addEventListener("click", handleMagicLinkLogin);
+  elements.logoutBtn.addEventListener("click", handleLogout);
+  elements.refreshAccessBtn.addEventListener("click", () => refreshBuiltSmartAccess());
+  elements.startTrialBtn.addEventListener("click", handleStartTrial);
+  elements.checkoutBtn.addEventListener("click", handleCheckout);
+  elements.aiCreditCheckoutBtn.addEventListener("click", handleAiCreditCheckout);
+  elements.refreshAiCreditBtn.addEventListener("click", () => refreshBuiltSmartAccess());
+  elements.redeemLicenseBtn.addEventListener("click", handleRedeemLicenseCode);
+  elements.exportAppDataBtn.addEventListener("click", exportLocalAppData);
+  elements.importAppDataBtn.addEventListener("click", () => elements.importAppDataInput.click());
+  elements.importAppDataInput.addEventListener("change", handleImportLocalAppData);
   elements.applyProfileBtn.addEventListener("click", applySelectedProfile);
   elements.saveProfileBtn.addEventListener("click", saveCurrentProfile);
   elements.deleteProfileBtn.addEventListener("click", deleteSelectedProfile);
@@ -302,12 +346,18 @@ function bindEvents() {
     updateProfileActions();
     applySelectedProfile();
   });
-  elements.licenseKey.addEventListener("input", () => {
-    licenseState.active = false;
-    clearLicenseSession();
-    renderLicenseComponent();
+  [
+    elements.templateSelect,
+    elements.lengthSelect,
+    elements.languageSelect,
+    elements.focusSelect,
+    elements.formatSelect,
+    elements.audienceSelect,
+    elements.toneSelect,
+    elements.actionModeSelect
+  ].forEach((select) => {
+    select.addEventListener("change", handleSummarySettingsChange);
   });
-
   elements.toggleKey.addEventListener("click", () => {
     apiKeyState.isVisible = !apiKeyState.isVisible;
     renderApiKeyComponent();
@@ -366,50 +416,161 @@ function handleHelpCloseKeydown(event) {
   elements.helpToggle.checked = false;
 }
 
-function handleSaveLicense() {
-  const key = normalizeLicenseKey(elements.licenseKey.value);
-  licenseState.key = key;
-  licenseState.active = false;
-  clearLicenseSession();
-  saveLicenseKey(key);
-  setLicenseFeedback(key ? "Lizenzschlüssel gespeichert. Bitte Lizenz prüfen." : "Bitte Lizenzschlüssel eingeben.", key ? "info" : "error");
-  renderLicenseComponent();
-}
-
-function useDemoLicense() {
-  elements.licenseKey.value = DEMO_LICENSE_KEY;
-  licenseState.key = DEMO_LICENSE_KEY;
-  licenseState.active = false;
-  clearLicenseSession();
-  saveLicenseKey(DEMO_LICENSE_KEY);
-  renderLicenseComponent();
-  setLicenseFeedback("Demo-Lizenz eingetragen. Klicke auf Lizenz prüfen.", "info");
-}
-
-async function handleVerifyLicense() {
-  const key = normalizeLicenseKey(elements.licenseKey.value || licenseState.key);
-  licenseState.isBusy = true;
-  renderLicenseComponent();
-  setLicenseFeedback("Lizenz wird geprüft...", "loading");
+async function handleMagicLinkLogin() {
+  const email = elements.loginEmail.value.trim();
+  setBuiltSmartBusy(true, "login", "Magic Link wird gesendet...");
 
   try {
-    const result = await verifyLicenseKey(key);
-    licenseState.key = result.licenseKey;
-    licenseState.active = true;
-    saveLicenseKey(result.licenseKey);
-    setLicenseSessionActive();
-    setLicenseFeedback(`Lizenz aktiv (${result.plan}).`, "success");
-  } catch (error) {
-    licenseState.active = false;
-    clearLicenseSession();
-    setLicenseFeedback(error.message, "error");
+    const result = await loginWithMagicLink(email);
+    if (!result.ok) {
+      setAccessFeedback(getBuiltSmartReasonMessage(result), "error");
+      return;
+    }
+    setAccessFeedback("Magic Link gesendet. Bitte E-Mail öffnen und den Login bestätigen.", "success");
   } finally {
-    licenseState.isBusy = false;
-    renderLicenseComponent();
+    setBuiltSmartBusy(false);
   }
 }
 
-function handleSaveKey() {
+async function handleLogout() {
+  setBuiltSmartBusy(true, "logout", "Logout wird ausgeführt...");
+  await logout();
+  builtSmartState.user = null;
+  builtSmartState.access = null;
+  builtSmartState.aiBalance = null;
+  setBuiltSmartBusy(false);
+  renderBuiltSmartAccess();
+  setAccessFeedback("Logout erfolgreich. Lokale App-Inhalte bleiben erhalten.", "info");
+}
+
+async function handleStartTrial() {
+  setBuiltSmartBusy(true, "trial", "Trial wird gestartet...");
+  const result = await startTrial(BUILTSMART_CONFIG.appKey);
+  setBuiltSmartBusy(false);
+
+  if (!result.ok) {
+    setAccessFeedback(getBuiltSmartReasonMessage(result), "error");
+    await refreshBuiltSmartAccess({ silent: true });
+    return;
+  }
+
+  setAccessFeedback("3-Tage-Trial aktiv. Enthalten sind 5 BuiltSmart AI Testanfragen.", "success");
+  await refreshBuiltSmartAccess({ silent: true });
+}
+
+async function handleRedeemLicenseCode() {
+  const code = elements.licenseCode.value.trim();
+  if (!code) {
+    setAccessFeedback("Bitte zuerst einen Lizenzschlüssel eingeben.", "error");
+    return;
+  }
+
+  setBuiltSmartBusy(true, "redeem", "Lizenzschlüssel wird aktiviert...");
+  const result = await redeemLicenseCode(BUILTSMART_CONFIG.appKey, code);
+  setBuiltSmartBusy(false);
+
+  if (!result.ok) {
+    setAccessFeedback(getBuiltSmartReasonMessage(result), "error");
+    return;
+  }
+
+  elements.licenseCode.value = "";
+  setAccessFeedback("Lizenzschlüssel aktiviert. App-Zugriff ist freigeschaltet.", "success");
+  await refreshBuiltSmartAccess({ silent: true });
+}
+
+async function handleCheckout() {
+  setBuiltSmartBusy(true, "checkout", "Checkout wird vorbereitet...");
+  const result = await createCheckoutSession(BUILTSMART_CONFIG.appKey, 1);
+  setBuiltSmartBusy(false);
+
+  if (!result.ok || !result.url) {
+    setAccessFeedback(getBuiltSmartReasonMessage(result), "error");
+    return;
+  }
+
+  window.location.href = result.url;
+}
+
+async function handleAiCreditCheckout() {
+  if (!builtSmartState.user) {
+    setAiCreditFeedback("Bitte zuerst per Magic Link einloggen. Danach kann das Guthaben deinem Nutzerzugriff zugeordnet werden.", "error");
+    elements.builtSmartAccessCard.open = true;
+    return;
+  }
+
+  setBuiltSmartBusy(true, "aiCredits", "Guthaben-Checkout wird vorbereitet...");
+  setAiCreditFeedback("Guthaben-Checkout wird vorbereitet...", "loading");
+  const result = await createCheckoutSession(BUILTSMART_CONFIG.appKey, 1, "ai_credits");
+  setBuiltSmartBusy(false);
+
+  if (!result.ok || !result.url) {
+    setAiCreditFeedback(`${getBuiltSmartReasonMessage(result)} Hinweis: Der zentrale Vertrag muss einen Guthaben-Plan wie planKey \"ai_credits\" bereitstellen.`, "error");
+    return;
+  }
+
+  window.location.href = result.url;
+}
+
+async function refreshBuiltSmartAccess({ silent = false } = {}) {
+  if (!silent) setAccessFeedback("BuiltSmart Status wird geprüft...", "loading");
+  setBuiltSmartBusy(true, "refresh");
+
+  try {
+    const [userResult, accessResult, balanceResult] = await Promise.all([
+      getCurrentUser(),
+      checkAppAccess(BUILTSMART_CONFIG.appKey),
+      getAiCreditBalance()
+    ]);
+
+    builtSmartState.user = userResult.user || null;
+    builtSmartState.access = accessResult;
+    builtSmartState.aiBalance = balanceResult.ok ? balanceResult.balance : null;
+    renderBuiltSmartAccess();
+
+    if (!silent) {
+      setAccessFeedback(getAccessSummaryMessage(accessResult, balanceResult), accessResult.access ? "success" : "info");
+      setAiCreditFeedback(getAiCreditSummaryMessage(balanceResult), balanceResult.ok ? "success" : "info");
+    }
+  } finally {
+    setBuiltSmartBusy(false);
+    renderBuiltSmartAccess();
+  }
+}
+
+function handleOwnApiModeChange() {
+  persistSettings();
+  renderApiKeyComponent();
+  renderBuiltSmartAccess();
+  setKeyFeedback(elements.useOwnApiKey.checked ? "Eigener API-Key wird für KI-Anfragen verwendet." : "BuiltSmart AI Guthaben wird für KI-Anfragen verwendet.", "info");
+}
+
+function handleSummarySettingsChange() {
+  workflowState.settingsTouched = true;
+  persistSettings();
+  updateWorkflowState();
+}
+
+function handleApiKeyActionClick(event) {
+  const button = event.target.closest("button");
+  if (!button) return;
+
+  const actions = {
+    saveKeyBtn: handleSaveKey,
+    connectBtn: handleConnect,
+    testConnectionBtn: handleConnectionTest,
+    disconnectBtn: handleDisconnect,
+    clearApiKeyBtn: clearOwnApiKey
+  };
+
+  const action = actions[button.id];
+  if (!action || button.disabled) return;
+
+  event.preventDefault();
+  action();
+}
+
+async function handleSaveKey() {
   const candidate = normalizeKeyInput(elements.apiKey.value);
 
   if (!candidate && !apiKeyState.value) {
@@ -432,12 +593,33 @@ function handleSaveKey() {
     apiKeyState.value = candidate;
   }
 
+  elements.rememberKey.checked = true;
+  elements.useOwnApiKey.checked = true;
   apiKeyState.isConnected = false;
   sessionStorage.removeItem(SESSION_KEY);
   persistSettings();
   renderApiKeyComponent();
-  setKeyFeedback(elements.rememberKey.checked ? "API-Key in diesem Browser gespeichert." : "API-Key für diese Sitzung übernommen.", "success");
-  setStatus("Bereit", "ready");
+  renderBuiltSmartAccess();
+  setApiBusy(true, "save", "API-Key gespeichert. Verbindung wird geprüft...");
+  setStatus("Analyse läuft", "warn");
+
+  try {
+    await testClaudeConnection({
+      apiKey: apiKeyState.value,
+      proxyUrl: DEFAULT_PROXY_URL,
+      model: DEFAULT_CLAUDE_MODEL
+    });
+
+    apiKeyState.isConnected = true;
+    sessionStorage.setItem(SESSION_KEY, "true");
+    setKeyFeedback("Verbindung OK. Eigener API-Key wurde gespeichert und von Anthropic akzeptiert.", "success");
+    setStatus("Bereit", "ready");
+  } catch (error) {
+    handleApiFailure(error);
+  } finally {
+    setApiBusy(false);
+    renderApiKeyComponent();
+  }
 }
 
 async function handleConnect() {
@@ -496,6 +678,24 @@ function handleDisconnect() {
   renderApiKeyComponent();
   setKeyFeedback("Verbindung getrennt. Der gespeicherte API-Key bleibt erhalten.", "info");
   setStatus(apiKeyState.value ? "Bereit" : "API-Key fehlt", apiKeyState.value ? "ready" : "warn");
+}
+
+function clearOwnApiKey() {
+  apiKeyState.value = "";
+  apiKeyState.isVisible = false;
+  apiKeyState.isConnected = false;
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(STORAGE_KEY);
+  removeOwnApiKey("anthropic");
+  elements.rememberKey.checked = false;
+  elements.useOwnApiKey.checked = false;
+  elements.apiKey.value = "";
+  elements.apiKey.type = "password";
+  persistSettings();
+  renderApiKeyComponent();
+  renderBuiltSmartAccess();
+  setKeyFeedback("Eigener API-Key gelöscht. BuiltSmart AI Guthaben bleibt als Standardmodus verfügbar.", "info");
+  setStatus("API-Key gelöscht", "warn");
 }
 
 function handleDragEnter(event) {
@@ -602,14 +802,8 @@ function clearVisualPdfState() {
 
 async function handleSummarize() {
   const text = elements.sourceText.value.trim();
-  const apiKey = apiKeyState.value;
   const hasVisualPdf = Boolean(visualPdfState.base64);
-
-  if (!apiKey) {
-    setStatus("API-Key fehlt", "warn");
-    setSummaryOutput("Bitte trage im Einstellungsbereich deinen Anthropic API-Key ein.");
-    return;
-  }
+  const useOwnKey = elements.useOwnApiKey.checked;
 
   if (!text && !hasVisualPdf) {
     setStatus("Fehler bei Verarbeitung", "danger");
@@ -624,15 +818,122 @@ async function handleSummarize() {
   }
 
   persistSettings();
+  workflowState.settingsTouched = true;
+  updateWorkflowState();
   setSummaryButtonsDisabled(true);
 
   try {
     setStatus("Analyse läuft", "warn");
+    const actionPayload = buildSummaryActionPayload(text, hasVisualPdf);
+
+    if (useOwnKey) {
+      if (!ensureApiKeyForAction()) return;
+      if (!confirmOwnApiAction(actionPayload)) return;
+    } else {
+      const hasAppAccess = await ensureBuiltSmartAppAccess();
+      if (!hasAppAccess) return;
+      const canRun = await confirmBuiltSmartAiAction(actionPayload);
+      if (!canRun) return;
+    }
+
     await shortPause();
     setStatus("Zusammenfassung wird erstellt", "warn");
 
-    const summary = hasVisualPdf
-      ? await requestClaudePdfSummary({
+    const summary = useOwnKey
+      ? await runOwnApiSummary(text, hasVisualPdf)
+      : await runBuiltSmartSummary(actionPayload);
+
+    setStatus("Qualität wird geprüft", "warn");
+    await shortPause();
+    setSummaryOutput(summary);
+    saveSummaryToHistory(summary);
+    setViewMode("result");
+    setStatus("Ausgabe fertig", "ready");
+    if (!useOwnKey) await refreshBuiltSmartAccess({ silent: true });
+  } catch (error) {
+    if (useOwnKey) handleApiFailure(error);
+    else setAccessFeedback(error.message || "BuiltSmart KI-Anfrage fehlgeschlagen.", "error");
+    setSummaryOutput([
+      "Die Anfrage konnte nicht verarbeitet werden.",
+      "",
+      error.message,
+      "",
+      useOwnKey ? getApiRecoveryHint(error) : "Hinweis: Prüfe Login, App-Zugriff, KI-Guthaben oder nutze optional einen eigenen API-Key."
+    ].join("\n"));
+  } finally {
+    setSummaryButtonsDisabled(false);
+  }
+}
+
+function buildSummaryActionPayload(text, hasVisualPdf) {
+  return {
+    inputLength: text.length || visualPdfState.base64.length,
+    outputMode: elements.lengthSelect.value,
+    text,
+    pdfBase64: hasVisualPdf ? visualPdfState.base64 : "",
+    fileName: hasVisualPdf ? visualPdfState.fileName : "",
+    length: elements.lengthSelect.value,
+    language: elements.languageSelect.value,
+    focus: elements.focusSelect.value,
+    format: elements.formatSelect.value,
+    template: elements.templateSelect.value,
+    audience: elements.audienceSelect.value,
+    tone: elements.toneSelect.value,
+    actionMode: elements.actionModeSelect.value
+  };
+}
+
+async function confirmBuiltSmartAiAction(payload) {
+  const estimate = await estimateAiUsage("summarize", {
+    inputLength: payload.inputLength,
+    outputMode: payload.outputMode
+  });
+
+  if (!estimate.ok || estimate.reason === "insufficient_ai_credits" || estimate.estimate?.hasEnoughBalance === false) {
+    setAccessFeedback(getBuiltSmartReasonMessage(estimate), "error");
+    setAiCreditFeedback("Kein BuiltSmart AI Guthaben verfügbar. Du kannst Guthaben kaufen oder Option 2 mit eigenem API-Key nutzen.", "error");
+    setStatus("KI-Guthaben fehlt", "warn");
+    elements.apiKeyCard.open = true;
+    return false;
+  }
+
+  const label = estimate.estimate?.label || `${estimate.estimate?.credits || 1} KI-Anfrage`;
+  const source = estimate.estimate?.willUseTrialCredit ? "Trial-Guthaben" : "BuiltSmart AI Guthaben";
+  return window.confirm(`Diese Zusammenfassung verbraucht voraussichtlich ${label} aus ${source}. Jetzt fortfahren?`);
+}
+
+function confirmOwnApiAction(payload) {
+  const estimatedTokens = Math.max(1, Math.ceil(payload.inputLength / 4));
+  return window.confirm(`Diese Zusammenfassung nutzt deinen eigenen Anthropic API-Key. Geschätzter Eingabeumfang: ca. ${estimatedTokens.toLocaleString("de-DE")} Token. Abrechnung und Nutzung laufen über dein Anthropic-Konto. Jetzt fortfahren?`);
+}
+
+async function ensureBuiltSmartAppAccess() {
+  const access = await checkAppAccess(BUILTSMART_CONFIG.appKey);
+  builtSmartState.access = access;
+  renderBuiltSmartAccess();
+
+  if (!access.ok || !access.access) {
+    setAccessFeedback(getBuiltSmartReasonMessage(access), "error");
+    setStatus("Zugriff fehlt", "warn");
+    elements.builtSmartAccessCard.open = true;
+    return false;
+  }
+
+  return true;
+}
+
+async function runBuiltSmartSummary(payload) {
+  const result = await runAiAction("summarize", payload);
+  if (!result.ok) throw new Error(getBuiltSmartReasonMessage(result));
+  const summary = result.result?.text || result.text;
+  if (!summary) throw new Error("Die zentrale BuiltSmart AI Funktion hat kein Ergebnis zurückgegeben.");
+  return summary;
+}
+
+async function runOwnApiSummary(text, hasVisualPdf) {
+  const apiKey = apiKeyState.value;
+  return hasVisualPdf
+    ? requestClaudePdfSummary({
         apiKey,
         proxyUrl: DEFAULT_PROXY_URL,
         model: DEFAULT_CLAUDE_MODEL,
@@ -647,7 +948,7 @@ async function handleSummarize() {
         tone: elements.toneSelect.value,
         actionMode: elements.actionModeSelect.value
       })
-      : await requestClaudeSummary({
+    : requestClaudeSummary({
         apiKey,
         proxyUrl: DEFAULT_PROXY_URL,
         model: DEFAULT_CLAUDE_MODEL,
@@ -661,25 +962,6 @@ async function handleSummarize() {
         tone: elements.toneSelect.value,
         actionMode: elements.actionModeSelect.value
       });
-
-    setStatus("Qualität wird geprüft", "warn");
-    await shortPause();
-    setSummaryOutput(summary);
-    saveSummaryToHistory(summary);
-    setViewMode("result");
-    setStatus("Ausgabe fertig", "ready");
-  } catch (error) {
-    handleApiFailure(error);
-    setSummaryOutput([
-      "Die Anfrage konnte nicht verarbeitet werden.",
-      "",
-      error.message,
-      "",
-      getApiRecoveryHint(error)
-    ].join("\n"));
-  } finally {
-    setSummaryButtonsDisabled(false);
-  }
 }
 
 function setSummaryOutput(text, isPlaceholder = false) {
@@ -690,6 +972,7 @@ function setSummaryOutput(text, isPlaceholder = false) {
     elements.summaryOutput.innerHTML = renderStructuredOutput(text);
   }
   elements.summaryOutput.classList.toggle("is-placeholder", isPlaceholder);
+  updateWorkflowState();
 }
 
 function renderStructuredOutput(markdownText) {
@@ -815,8 +1098,8 @@ function applyProfileSettings(settings) {
 
 function setSelectValue(select, value) {
   if (!value) return;
-  const hasOption = Array.from(select.options).some((option) => option.value === value);
-  if (hasOption) select.value = value;
+  const option = Array.from(select.options).find((item) => item.value === value || item.textContent === value);
+  if (option) select.value = option.value;
 }
 
 function loadCustomProfiles() {
@@ -877,6 +1160,9 @@ function applySelectedProfile() {
   if (!profile) return;
 
   applyProfileSettings(profile.settings);
+  workflowState.settingsTouched = true;
+  persistSettings();
+  updateWorkflowState();
   setProfileFeedback(`Profil angewendet: ${profile.name}`);
 }
 
@@ -931,6 +1217,7 @@ function updateCharacterCount() {
   elements.charCount.classList.toggle("danger", count > MAX_CHARS);
   updateTextQuality(count);
   updateSourceInsights(text, count);
+  updateWorkflowState();
 }
 
 function loadDemoSource() {
@@ -945,6 +1232,8 @@ function loadDemoSource() {
   elements.toneSelect.value = "Prägnant";
   elements.actionModeSelect.value = "Entscheidung vorbereiten";
   elements.lengthSelect.value = "detailed";
+  workflowState.settingsTouched = true;
+  persistSettings();
   updateCharacterCount();
   setViewMode("source");
   setStatus("Demoquelle geladen", "ready");
@@ -1046,13 +1335,45 @@ function setStatus(label, type) {
   elements.statusDot.classList.toggle("danger", type === "danger");
 }
 
+function updateWorkflowState() {
+  const hasAccess = Boolean(builtSmartState.access?.access || (elements.useOwnApiKey.checked && apiKeyState.isConnected));
+  const hasSource = elements.sourceText.value.trim().length > 0 || Boolean(visualPdfState.base64);
+  const hasSettings = workflowState.settingsTouched;
+  const hasResult = currentSummaryText.trim() && currentSummaryText !== "Noch keine Zusammenfassung erstellt.";
+  const stateByStep = {
+    access: hasAccess,
+    source: hasSource,
+    settings: hasSettings,
+    result: hasResult
+  };
+
+  elements.workflowSteps.forEach((step) => {
+    const isComplete = Boolean(stateByStep[step.dataset.workflowStep]);
+    step.classList.toggle("is-complete", isComplete);
+    step.classList.toggle("is-active", isComplete);
+  });
+}
+
 function persistSettings() {
-  if (elements.rememberKey.checked && apiKeyState.value) {
+  if (apiKeyState.value) {
     localStorage.setItem(STORAGE_KEY, apiKeyState.value);
+    saveOwnApiKey("anthropic", apiKeyState.value);
   } else {
     localStorage.removeItem(STORAGE_KEY);
+    if (!apiKeyState.value) removeOwnApiKey("anthropic");
   }
 
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+    useOwnApiKey: elements.useOwnApiKey.checked,
+    template: elements.templateSelect.value,
+    length: elements.lengthSelect.value,
+    language: elements.languageSelect.value,
+    focus: elements.focusSelect.value,
+    format: elements.formatSelect.value,
+    audience: elements.audienceSelect.value,
+    tone: elements.toneSelect.value,
+    actionMode: elements.actionModeSelect.value
+  }));
 }
 
 function renderApiKeyComponent(options = {}) {
@@ -1067,40 +1388,174 @@ function renderApiKeyComponent(options = {}) {
   elements.toggleKey.classList.toggle("is-active", apiKeyState.isVisible);
   elements.connectionBadge.textContent = apiKeyState.isConnected ? "Verbunden" : "Nicht verbunden";
   elements.connectionBadge.classList.toggle("is-connected", apiKeyState.isConnected);
+  elements.connectionBadge.classList.toggle("is-warning", elements.useOwnApiKey.checked && !apiKeyState.isConnected);
+  elements.connectionBadge.classList.toggle("is-muted", !elements.useOwnApiKey.checked);
   elements.connectBtn.textContent = apiKeyState.isConnected ? "Verbindung OK" : "Verbindung";
   elements.connectBtn.classList.toggle("is-connected", apiKeyState.isConnected);
   elements.connectBtn.setAttribute("aria-pressed", String(apiKeyState.isConnected));
   elements.keyHint.textContent = apiKeyState.value
-    ? "Gespeicherter Key wird teilweise angezeigt. Das Auge zeigt den vollständigen Schlüssel."
-    : "Gib deinen Anthropic API-Key ein. Ohne Key wird keine KI-Anfrage gesendet.";
+    ? "Gespeicherter eigener Key wird teilweise angezeigt. Das Auge zeigt den vollständigen Schlüssel."
+    : "Optional: eigener Anthropic API-Key für lokale KI-Nutzung. BuiltSmart AI Guthaben funktioniert ohne eigenen Key.";
 
   setButtonLoading(elements.saveKeyBtn, apiKeyState.busyAction === "save");
   setButtonLoading(elements.connectBtn, apiKeyState.busyAction === "connect");
   setButtonLoading(elements.testConnectionBtn, apiKeyState.busyAction === "test");
   setButtonLoading(elements.disconnectBtn, apiKeyState.busyAction === "disconnect");
   elements.saveKeyBtn.disabled = apiKeyState.isBusy;
-  elements.connectBtn.disabled = apiKeyState.isBusy || !apiKeyState.value;
-  elements.testConnectionBtn.disabled = apiKeyState.isBusy || !apiKeyState.value;
+  elements.connectBtn.disabled = apiKeyState.isBusy;
+  elements.testConnectionBtn.disabled = apiKeyState.isBusy;
   elements.disconnectBtn.disabled = apiKeyState.isBusy || !apiKeyState.isConnected;
+  elements.useOwnApiKey.checked = Boolean(elements.useOwnApiKey.checked);
+  updateWorkflowState();
 }
 
-function renderLicenseComponent() {
-  if (licenseState.key && elements.licenseKey.value !== licenseState.key) {
-    elements.licenseKey.value = licenseState.key;
+function loadSavedSettings() {
+  const savedOwnKey = getOwnApiKey("anthropic");
+  if (!apiKeyState.value && isPlausibleApiKey(savedOwnKey)) {
+    apiKeyState.value = savedOwnKey;
+    elements.rememberKey.checked = true;
   }
 
-  elements.licenseBadge.textContent = licenseState.active ? "Lizenz aktiv" : "Nicht aktiviert";
-  elements.licenseBadge.classList.toggle("is-connected", licenseState.active);
-  setButtonLoading(elements.verifyLicenseBtn, licenseState.isBusy);
-  elements.saveLicenseBtn.disabled = licenseState.isBusy;
-  elements.verifyLicenseBtn.disabled = licenseState.isBusy || !elements.licenseKey.value.trim();
-  elements.useDemoLicenseBtn.disabled = licenseState.isBusy;
+  try {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+    elements.useOwnApiKey.checked = Boolean(settings.useOwnApiKey);
+  } catch {
+    elements.useOwnApiKey.checked = false;
+  }
 }
 
-function setLicenseFeedback(message, type) {
-  elements.licenseFeedback.textContent = message;
-  elements.licenseFeedback.classList.remove("success", "error", "loading", "info");
-  elements.licenseFeedback.classList.add(type);
+function renderBuiltSmartAccess() {
+  const access = builtSmartState.access;
+  const balance = builtSmartState.aiBalance;
+  const user = builtSmartState.user;
+  const ownApiKeyActive = getOwnApiKeyStatus("anthropic").active && elements.useOwnApiKey.checked;
+  const builtSmartAiActive = !ownApiKeyActive;
+  const accessState = resolveAccessState(access);
+
+  elements.userStatus.textContent = user?.email || "Nicht eingeloggt";
+  elements.appAccessStatus.textContent = getAccessStatusLabel(access);
+  elements.aiBalanceStatus.textContent = getAiBalanceLabel(balance);
+  elements.aiModeStatus.textContent = builtSmartAiActive ? `BuiltSmart AI${balance ? ` · ${getAiBalanceLabel(balance)}` : ""}` : "Eigener API-Key aktiv";
+  elements.builtSmartAiChoice.classList.toggle("is-selected", builtSmartAiActive);
+  elements.ownApiChoice.classList.toggle("is-selected", ownApiKeyActive);
+  elements.accessBadge.textContent = accessState.label;
+  elements.accessBadge.classList.toggle("is-connected", accessState.kind === "active");
+  elements.accessBadge.classList.toggle("is-warning", accessState.kind === "warning");
+
+  setButtonLoading(elements.sendMagicLinkBtn, builtSmartState.busyAction === "login");
+  setButtonLoading(elements.logoutBtn, builtSmartState.busyAction === "logout");
+  setButtonLoading(elements.refreshAccessBtn, builtSmartState.busyAction === "refresh");
+  setButtonLoading(elements.startTrialBtn, builtSmartState.busyAction === "trial");
+  setButtonLoading(elements.checkoutBtn, builtSmartState.busyAction === "checkout");
+  setButtonLoading(elements.aiCreditCheckoutBtn, builtSmartState.busyAction === "aiCredits");
+  setButtonLoading(elements.refreshAiCreditBtn, builtSmartState.busyAction === "refresh");
+  setButtonLoading(elements.redeemLicenseBtn, builtSmartState.busyAction === "redeem");
+
+  elements.sendMagicLinkBtn.disabled = builtSmartState.isBusy;
+  elements.logoutBtn.disabled = builtSmartState.isBusy || !user;
+  elements.refreshAccessBtn.disabled = builtSmartState.isBusy;
+  elements.startTrialBtn.disabled = builtSmartState.isBusy || !user || !access?.trialAvailable;
+  elements.checkoutBtn.disabled = builtSmartState.isBusy || !user;
+  elements.aiCreditCheckoutBtn.disabled = builtSmartState.isBusy;
+  elements.refreshAiCreditBtn.disabled = builtSmartState.isBusy;
+  elements.redeemLicenseBtn.disabled = builtSmartState.isBusy || !user;
+  updateWorkflowState();
+}
+
+function setBuiltSmartBusy(isBusy, action = "", message = "") {
+  builtSmartState.isBusy = isBusy;
+  builtSmartState.busyAction = isBusy ? action : "";
+  if (message && action === "aiCredits") setAiCreditFeedback(message, "loading");
+  else if (message) setAccessFeedback(message, "loading");
+  renderBuiltSmartAccess();
+}
+
+function setAccessFeedback(message, type) {
+  elements.accessFeedback.textContent = message;
+  elements.accessFeedback.classList.remove("success", "error", "loading", "info");
+  elements.accessFeedback.classList.add(type);
+}
+
+function setAiCreditFeedback(message, type) {
+  elements.aiCreditFeedback.textContent = message;
+  elements.aiCreditFeedback.classList.remove("success", "error", "loading", "info");
+  elements.aiCreditFeedback.classList.add(type);
+}
+
+function resolveAccessState(access) {
+  if (!builtSmartState.user) return { label: "Nicht eingeloggt", kind: "warning" };
+  if (!access) return { label: "Nicht geprüft", kind: "warning" };
+  if (access.reason === "config_missing") return { label: "Konfiguration offen", kind: "warning" };
+  if (access.access && access.source === "trial") return { label: "Trial aktiv", kind: "active" };
+  if (access.access) return { label: "Lizenz aktiv", kind: "active" };
+  if (access.reason === "trial_expired") return { label: "Trial abgelaufen", kind: "warning" };
+  if (access.reason === "license_expired") return { label: "Lizenz abgelaufen", kind: "warning" };
+  if (access.trialAvailable) return { label: "Trial verfügbar", kind: "warning" };
+  return { label: "Kein Zugriff", kind: "warning" };
+}
+
+function getAccessStatusLabel(access) {
+  if (!access) return "Nicht geprüft";
+  if (access.reason === "config_missing") return "Backend-Werte fehlen";
+  if (access.access && access.source === "trial") return `Trial bis ${formatDate(access.validUntil)}`;
+  if (access.access) return `Aktiv bis ${formatDate(access.validUntil)}`;
+  if (access.reason === "trial_expired") return "Trial abgelaufen";
+  if (access.reason === "license_expired") return "Lizenz abgelaufen";
+  if (access.trialAvailable) return "Trial verfügbar";
+  return getBuiltSmartReasonMessage(access);
+}
+
+function getAiBalanceLabel(balance) {
+  if (!balance) return "Nicht geprüft";
+  const trial = Number(balance.includedTrialRequestsRemaining || 0);
+  const paid = Number(balance.paidCreditsRemaining || 0);
+  if (trial + paid <= 0) return "Kein KI-Guthaben";
+  return `${trial} Trial · ${paid} bezahlt`;
+}
+
+function getAccessSummaryMessage(access, balance) {
+  if (access?.reason === "config_missing") return getBuiltSmartReasonMessage(access);
+  if (!builtSmartState.user) return "Bitte per E-Mail/Magic Link einloggen.";
+  if (access?.access) return `App-Zugriff aktiv. KI-Guthaben: ${getAiBalanceLabel(balance?.balance || balance)}.`;
+  return getBuiltSmartReasonMessage(access);
+}
+
+function getAiCreditSummaryMessage(balanceResult = {}) {
+  if (!builtSmartState.user) return "Bitte zuerst einloggen. Danach kann BuiltSmart AI Guthaben geprüft oder gekauft werden.";
+  if (!balanceResult.ok) return getBuiltSmartReasonMessage(balanceResult);
+  return `BuiltSmart AI Guthaben: ${getAiBalanceLabel(balanceResult.balance)}.`;
+}
+
+function getBuiltSmartReasonMessage(result = {}) {
+  if (result.reason === "config_missing") {
+    return `Zentrale BuiltSmart Konfiguration fehlt noch: ${(result.missing || builtSmartState.configStatus.missing).join(", ")}.`;
+  }
+
+  const messages = {
+    not_authenticated: "Bitte zuerst per E-Mail/Magic Link einloggen.",
+    invalid_email: "Bitte eine gültige E-Mail-Adresse eingeben.",
+    no_entitlement: "Für diese App ist noch keine aktive Lizenz vorhanden.",
+    trial_already_used: "Der Trial wurde für diesen Nutzerzugriff bereits genutzt.",
+    trial_expired: "Der Trial ist abgelaufen. Bitte Jahreslizenz aktivieren oder kaufen.",
+    license_expired: "Die Lizenz ist abgelaufen oder gekündigt.",
+    code_not_found: "Dieser Lizenzschlüssel wurde nicht gefunden.",
+    code_inactive: "Dieser Lizenzschlüssel ist nicht aktiv.",
+    code_fully_redeemed: "Dieser Lizenzschlüssel wurde bereits vollständig eingelöst.",
+    invalid_quantity: "Die gewählte Lizenzanzahl ist ungültig.",
+    plan_not_found: "Der angeforderte Checkout-Plan wurde im Backend nicht gefunden.",
+    checkout_failed: "Checkout konnte nicht erstellt werden.",
+    insufficient_ai_credits: "Kein BuiltSmart AI Guthaben verfügbar.",
+    no_app_access: "Für diese App besteht aktuell kein Zugriff.",
+    provider_error: "Der KI-Anbieter hat die Anfrage nicht verarbeitet."
+  };
+
+  return result.message || messages[result.reason] || "BuiltSmart Anfrage konnte nicht verarbeitet werden.";
+}
+
+function formatDate(value) {
+  if (!value) return "unbekannt";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "unbekannt" : date.toLocaleDateString("de-DE");
 }
 
 function maskApiKey(key) {
@@ -1255,6 +1710,97 @@ function exportSummaryHtml() {
   URL.revokeObjectURL(link.href);
 }
 
+function exportLocalAppData() {
+  const payload = {
+    schema: "builtsmart-local-app-data",
+    appKey: BUILTSMART_CONFIG.appKey,
+    appName: BUILTSMART_CONFIG.appName,
+    exportedAt: new Date().toISOString(),
+    data: {
+      sourceText: elements.sourceText.value,
+      currentSummaryText,
+      pdfStatus: elements.pdfStatus.textContent,
+      history: loadHistory(),
+      profiles: loadCustomProfiles(),
+      settings: getCurrentSummarySettings()
+    }
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `smart-summary-local-data-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  setBackupFeedback("Lokale App-Daten exportiert. Lizenzdaten, Sessions und API-Keys wurden nicht exportiert.", "success");
+}
+
+async function handleImportLocalAppData(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const payload = JSON.parse(await file.text());
+    if (payload.schema !== "builtsmart-local-app-data" || payload.appKey !== BUILTSMART_CONFIG.appKey) {
+      throw new Error("Diese JSON-Datei gehört nicht zu dieser App oder hat ein unbekanntes Format.");
+    }
+
+    const data = payload.data || {};
+    elements.sourceText.value = String(data.sourceText || "");
+    clearVisualPdfState();
+    elements.pdfInput.value = "";
+    elements.pdfStatus.textContent = data.pdfStatus || "Keine Datei ausgewählt";
+    setSummaryOutput(data.currentSummaryText || "Noch keine Zusammenfassung erstellt.", !data.currentSummaryText || data.currentSummaryText === "Noch keine Zusammenfassung erstellt.");
+
+    if (Array.isArray(data.history)) saveHistory(data.history);
+    if (Array.isArray(data.profiles)) saveCustomProfiles(data.profiles);
+    if (data.settings) applyImportedSummarySettings(data.settings);
+
+    updateCharacterCount();
+    renderProfiles();
+    renderHistory();
+    setViewMode(getDefaultViewMode());
+    setBackupFeedback("Lokale App-Daten importiert. Lizenzdaten, Sessions und API-Keys wurden nicht verändert.", "success");
+  } catch (error) {
+    setBackupFeedback(error.message || "Import fehlgeschlagen.", "error");
+  } finally {
+    elements.importAppDataInput.value = "";
+  }
+}
+
+function getCurrentSummarySettings() {
+  return {
+    template: elements.templateSelect.value,
+    length: elements.lengthSelect.value,
+    language: elements.languageSelect.value,
+    focus: elements.focusSelect.value,
+    format: elements.formatSelect.value,
+    audience: elements.audienceSelect.value,
+    tone: elements.toneSelect.value,
+    actionMode: elements.actionModeSelect.value
+  };
+}
+
+function applyImportedSummarySettings(settings) {
+  setSelectValue(elements.templateSelect, settings.template);
+  setSelectValue(elements.lengthSelect, settings.length);
+  setSelectValue(elements.languageSelect, settings.language);
+  setSelectValue(elements.focusSelect, settings.focus);
+  setSelectValue(elements.formatSelect, settings.format);
+  setSelectValue(elements.audienceSelect, settings.audience);
+  setSelectValue(elements.toneSelect, settings.tone);
+  setSelectValue(elements.actionModeSelect, settings.actionMode);
+  workflowState.settingsTouched = true;
+  persistSettings();
+  updateWorkflowState();
+}
+
+function setBackupFeedback(message, type) {
+  elements.backupFeedback.textContent = message;
+  elements.backupFeedback.classList.remove("success", "error", "loading", "info");
+  elements.backupFeedback.classList.add(type);
+}
+
 function printSummaryAsPdf() {
   const summary = currentSummaryText.trim();
   if (!summary || summary === "Noch keine Zusammenfassung erstellt.") return;
@@ -1273,6 +1819,7 @@ function resetWorkspace() {
   clearVisualPdfState();
   elements.pdfInput.value = "";
   elements.pdfStatus.textContent = "Keine Datei ausgewählt";
+  workflowState.settingsTouched = false;
   setSummaryOutput("Noch keine Zusammenfassung erstellt.", true);
   updateCharacterCount();
   setViewMode(getDefaultViewMode());
@@ -1392,8 +1939,11 @@ function applyHistorySettings(item) {
   setSelectValue(elements.audienceSelect, item.audience);
   setSelectValue(elements.toneSelect, item.tone);
   setSelectValue(elements.actionModeSelect, item.actionMode);
+  workflowState.settingsTouched = true;
   elements.profileSelect.value = "";
   updateProfileActions();
+  persistSettings();
+  updateWorkflowState();
 }
 
 function deleteHistoryItem(id) {
