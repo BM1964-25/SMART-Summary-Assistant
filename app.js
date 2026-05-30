@@ -211,8 +211,6 @@ const elements = {
   licenseCode: document.querySelector("#licenseCode"),
   redeemLicenseBtn: document.querySelector("#redeemLicenseBtn"),
   accessBadge: document.querySelector("#accessBadge"),
-  userStatus: document.querySelector("#userStatus"),
-  appAccessStatus: document.querySelector("#appAccessStatus"),
   aiBalanceStatus: document.querySelector("#aiBalanceStatus"),
   aiModeStatus: document.querySelector("#aiModeStatus"),
   aiCreditFeedback: document.querySelector("#aiCreditFeedback"),
@@ -248,6 +246,7 @@ const elements = {
   clearHistoryBtn: document.querySelector("#clearHistoryBtn"),
   statusText: document.querySelector("#statusText"),
   statusDot: document.querySelector("#statusDot"),
+  statusPanel: document.querySelector("#statusPanel"),
   helpSearch: document.querySelector("#helpSearch"),
   helpToggle: document.querySelector("#helpToggle"),
   helpButton: document.querySelector(".help-button"),
@@ -255,6 +254,7 @@ const elements = {
   helpSections: document.querySelectorAll("[data-help-section]"),
   helpEmpty: document.querySelector("#helpEmpty"),
   workflowSteps: document.querySelectorAll("[data-workflow-step]"),
+  licenseWorkflowSteps: document.querySelectorAll("[data-license-step]"),
   builtSmartAiChoice: document.querySelector("#builtSmartAiChoice"),
   ownApiChoice: document.querySelector("#ownApiChoice")
 };
@@ -326,6 +326,7 @@ function bindEvents() {
   elements.resetBtn.addEventListener("click", resetWorkspace);
   elements.historyList.addEventListener("click", handleHistoryClick);
   elements.clearHistoryBtn.addEventListener("click", clearHistory);
+  elements.statusPanel.addEventListener("click", openAccessSetupFromStatus);
   elements.apiKeyDetails.addEventListener("click", handleApiKeyActionClick);
   elements.useOwnApiKey.addEventListener("change", handleOwnApiModeChange);
   elements.sendMagicLinkBtn.addEventListener("click", handleMagicLinkLogin);
@@ -383,6 +384,7 @@ function bindEvents() {
       renderApiKeyComponent();
     }
   });
+  elements.loginEmail.addEventListener("input", updateLicenseWorkflowState);
   elements.rememberKey.addEventListener("change", () => {
     persistSettings();
     setKeyFeedback(elements.rememberKey.checked ? "Speicherung in diesem Browser aktiviert." : "Speicherung in diesem Browser deaktiviert.", "info");
@@ -444,7 +446,7 @@ async function handleLogout() {
 }
 
 async function handleStartTrial() {
-  setBuiltSmartBusy(true, "trial", "Trial wird gestartet...");
+  setBuiltSmartBusy(true, "trial", "Free Trial wird gestartet...");
   const result = await startTrial(BUILTSMART_CONFIG.appKey);
   setBuiltSmartBusy(false);
 
@@ -454,7 +456,7 @@ async function handleStartTrial() {
     return;
   }
 
-  setAccessFeedback("3-Tage-Trial aktiv. Enthalten sind 5 BuiltSmart AI Testanfragen.", "success");
+  setAccessFeedback("3-Tage Free Trial aktiv. Enthalten sind 5 kostenlose BuiltSmart AI KI-Anfragen.", "success");
   await refreshBuiltSmartAccess({ silent: true });
 }
 
@@ -549,6 +551,13 @@ function handleSummarySettingsChange() {
   workflowState.settingsTouched = true;
   persistSettings();
   updateWorkflowState();
+}
+
+function openAccessSetupFromStatus() {
+  const accessPanel = document.querySelector("details.api-panel");
+  if (accessPanel) accessPanel.open = true;
+  elements.apiKeyCard.open = true;
+  elements.apiKeyCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function handleApiKeyActionClick(event) {
@@ -898,7 +907,7 @@ async function confirmBuiltSmartAiAction(payload) {
   }
 
   const label = estimate.estimate?.label || `${estimate.estimate?.credits || 1} KI-Anfrage`;
-  const source = estimate.estimate?.willUseTrialCredit ? "Trial-Guthaben" : "BuiltSmart AI Guthaben";
+  const source = estimate.estimate?.willUseTrialCredit ? "Free-Trial-Guthaben" : "BuiltSmart AI Guthaben";
   return window.confirm(`Diese Zusammenfassung verbraucht voraussichtlich ${label} aus ${source}. Jetzt fortfahren?`);
 }
 
@@ -1330,9 +1339,16 @@ function updateTextQuality(count = elements.sourceText.value.length) {
 }
 
 function setStatus(label, type) {
-  elements.statusText.textContent = label === "Bereit" ? "System bereit" : label;
+  const displayLabel = label === "Bereit"
+    ? "System bereit"
+    : label === "API-Key fehlt"
+      ? "API-Key fehlt - Zugang einrichten"
+      : label;
+  elements.statusText.textContent = displayLabel;
   elements.statusDot.classList.toggle("warn", type === "warn");
   elements.statusDot.classList.toggle("danger", type === "danger");
+  elements.statusPanel.classList.toggle("is-actionable", label === "API-Key fehlt");
+  elements.statusPanel.setAttribute("aria-label", label === "API-Key fehlt" ? "API-Key fehlt - Zugang einrichten" : displayLabel);
 }
 
 function updateWorkflowState() {
@@ -1432,8 +1448,6 @@ function renderBuiltSmartAccess() {
   const builtSmartAiActive = !ownApiKeyActive;
   const accessState = resolveAccessState(access);
 
-  elements.userStatus.textContent = user?.email || "Nicht eingeloggt";
-  elements.appAccessStatus.textContent = getAccessStatusLabel(access);
   elements.aiBalanceStatus.textContent = getAiBalanceLabel(balance);
   elements.aiModeStatus.textContent = builtSmartAiActive ? `BuiltSmart AI${balance ? ` · ${getAiBalanceLabel(balance)}` : ""}` : "Eigener API-Key aktiv";
   elements.builtSmartAiChoice.classList.toggle("is-selected", builtSmartAiActive);
@@ -1459,7 +1473,25 @@ function renderBuiltSmartAccess() {
   elements.aiCreditCheckoutBtn.disabled = builtSmartState.isBusy;
   elements.refreshAiCreditBtn.disabled = builtSmartState.isBusy;
   elements.redeemLicenseBtn.disabled = builtSmartState.isBusy || !user;
+  updateLicenseWorkflowState();
   updateWorkflowState();
+}
+
+function updateLicenseWorkflowState() {
+  const emailEntered = isValidEmailInput(elements.loginEmail.value);
+  const loggedIn = Boolean(builtSmartState.user);
+  const appAccessActive = Boolean(builtSmartState.access?.access);
+  const statusChecked = Boolean(loggedIn && builtSmartState.access);
+  const stateByStep = {
+    email: emailEntered,
+    login: loggedIn,
+    access: appAccessActive,
+    status: statusChecked
+  };
+
+  elements.licenseWorkflowSteps.forEach((step) => {
+    step.classList.toggle("is-complete", Boolean(stateByStep[step.dataset.licenseStep]));
+  });
 }
 
 function setBuiltSmartBusy(isBusy, action = "", message = "") {
@@ -1486,22 +1518,22 @@ function resolveAccessState(access) {
   if (!builtSmartState.user) return { label: "Nicht eingeloggt", kind: "warning" };
   if (!access) return { label: "Nicht geprüft", kind: "warning" };
   if (access.reason === "config_missing") return { label: "Konfiguration offen", kind: "warning" };
-  if (access.access && access.source === "trial") return { label: "Trial aktiv", kind: "active" };
+  if (access.access && access.source === "trial") return { label: "Free Trial aktiv", kind: "active" };
   if (access.access) return { label: "Lizenz aktiv", kind: "active" };
-  if (access.reason === "trial_expired") return { label: "Trial abgelaufen", kind: "warning" };
+  if (access.reason === "trial_expired") return { label: "Free Trial abgelaufen", kind: "warning" };
   if (access.reason === "license_expired") return { label: "Lizenz abgelaufen", kind: "warning" };
-  if (access.trialAvailable) return { label: "Trial verfügbar", kind: "warning" };
+  if (access.trialAvailable) return { label: "Free Trial verfügbar", kind: "warning" };
   return { label: "Kein Zugriff", kind: "warning" };
 }
 
 function getAccessStatusLabel(access) {
   if (!access) return "Nicht geprüft";
   if (access.reason === "config_missing") return "Backend-Werte fehlen";
-  if (access.access && access.source === "trial") return `Trial bis ${formatDate(access.validUntil)}`;
+  if (access.access && access.source === "trial") return `Free Trial bis ${formatDate(access.validUntil)}`;
   if (access.access) return `Aktiv bis ${formatDate(access.validUntil)}`;
-  if (access.reason === "trial_expired") return "Trial abgelaufen";
+  if (access.reason === "trial_expired") return "Free Trial abgelaufen";
   if (access.reason === "license_expired") return "Lizenz abgelaufen";
-  if (access.trialAvailable) return "Trial verfügbar";
+  if (access.trialAvailable) return "Free Trial verfügbar";
   return getBuiltSmartReasonMessage(access);
 }
 
@@ -1510,7 +1542,7 @@ function getAiBalanceLabel(balance) {
   const trial = Number(balance.includedTrialRequestsRemaining || 0);
   const paid = Number(balance.paidCreditsRemaining || 0);
   if (trial + paid <= 0) return "Kein KI-Guthaben";
-  return `${trial} Trial · ${paid} bezahlt`;
+  return `${trial} Free Trial · ${paid} bezahlt`;
 }
 
 function getAccessSummaryMessage(access, balance) {
@@ -1535,8 +1567,8 @@ function getBuiltSmartReasonMessage(result = {}) {
     not_authenticated: "Bitte zuerst per E-Mail/Magic Link einloggen.",
     invalid_email: "Bitte eine gültige E-Mail-Adresse eingeben.",
     no_entitlement: "Für diese App ist noch keine aktive Lizenz vorhanden.",
-    trial_already_used: "Der Trial wurde für diesen Nutzerzugriff bereits genutzt.",
-    trial_expired: "Der Trial ist abgelaufen. Bitte Jahreslizenz aktivieren oder kaufen.",
+    trial_already_used: "Der Free Trial wurde für diesen Nutzerzugriff bereits genutzt.",
+    trial_expired: "Der Free Trial ist abgelaufen. Bitte Jahreslizenz aktivieren oder kaufen.",
     license_expired: "Die Lizenz ist abgelaufen oder gekündigt.",
     code_not_found: "Dieser Lizenzschlüssel wurde nicht gefunden.",
     code_inactive: "Dieser Lizenzschlüssel ist nicht aktiv.",
@@ -1572,6 +1604,10 @@ function normalizeKeyInput(value) {
 
 function isPlausibleApiKey(value) {
   return /^sk-ant-[A-Za-z0-9_-]{20,}$/.test(value.trim());
+}
+
+function isValidEmailInput(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
 }
 
 function ensureApiKeyForAction() {

@@ -14,7 +14,7 @@
         <img class="app-icon" src="assets/smart-summary-icon.png" alt="" aria-hidden="true">
         <div>
           <p class="eyebrow">SMARTBUILT-AI</p>
-          <h1>SMART Summary Assistant</h1>
+          <h1>SMART SummaryAssistant</h1>
           <p class="lead">Präzise KI-Zusammenfassungen für Dokumente, Entscheidungen und Fachinhalte.</p>
         </div>
       </div>
@@ -23,10 +23,10 @@
           <span aria-hidden="true">?</span>
           <span>Hilfe</span>
         </label>
-        <div class="status-panel" aria-live="polite">
+        <button type="button" class="status-panel" id="statusPanel" aria-label="KI-Zugang einrichten">
           <span class="status-dot" id="statusDot"></span>
-          <strong id="statusText">System bereit</strong>
-        </div>
+          <strong id="statusText" aria-live="polite">System bereit</strong>
+        </button>
       </div>
     </header>
 
@@ -300,7 +300,7 @@
         <summary class="panel-heading compact api-panel-toggle">
           <div>
             <h2>Zugriff, Lizenz & Datenschutz</h2>
-            <p>Login, Trial, Lizenz, KI-Guthaben und eigener API-Key.</p>
+            <p>Login, Free Trial, Lizenz, KI-Guthaben und eigener API-Key.</p>
           </div>
           <span class="api-panel-summary">
             <span class="chevron" aria-hidden="true">▾</span>
@@ -403,7 +403,7 @@
           <summary class="api-key-toggle">
             <div>
               <h3 id="builtSmartAccessTitle">Lizenz & Nutzerzugriff</h3>
-              <p>Magic-Link Login, 3-Tage-Trial, Jahreslizenz und Lizenzschlüssel.</p>
+              <p>Magic-Link Login, 3-Tage Free Trial, Jahreslizenz und Lizenzschlüssel.</p>
             </div>
             <span class="api-key-summary">
               <span class="connection-badge" id="accessBadge">Nicht eingeloggt</span>
@@ -412,21 +412,33 @@
           </summary>
 
           <div class="api-key-details">
-            <div class="access-status-grid" aria-label="BuiltSmart Zugriffsstatus">
-              <div>
-                <span>Nutzerzugriff</span>
-                <strong id="userStatus">Nicht eingeloggt</strong>
+            <div class="license-workflow" aria-label="Einrichtungsschritte für Lizenz und Nutzerzugriff">
+              <div class="license-workflow-step" data-license-step="email">
+                <span>01</span>
+                <strong>E-Mail eingeben</strong>
+                <small>Login-Adresse eintragen</small>
               </div>
-              <div>
-                <span>App-Zugriff</span>
-                <strong id="appAccessStatus">Nicht geprüft</strong>
+              <div class="license-workflow-step" data-license-step="login">
+                <span>02</span>
+                <strong>Magic Link bestätigen</strong>
+                <small>Link in der E-Mail öffnen</small>
+              </div>
+              <div class="license-workflow-step" data-license-step="access">
+                <span>03</span>
+                <strong>Free Trial oder Lizenz wählen</strong>
+                <small>5 KI-Anfragen kostenlos oder Jahreslizenz</small>
+              </div>
+              <div class="license-workflow-step" data-license-step="status">
+                <span>04</span>
+                <strong>KI-Nutzung festlegen</strong>
+                <small>API-Key oder BuiltSmart AI Guthaben</small>
               </div>
             </div>
 
             <div class="field api-field">
               <label for="loginEmail">E-Mail für Magic Link</label>
               <input id="loginEmail" type="email" autocomplete="email" placeholder="name@example.com">
-              <p class="field-help">Trial-Start und Kauf sind erst nach Login möglich. Der Magic Link wird an diese E-Mail-Adresse gesendet.</p>
+              <p class="field-help">Du erhältst eine E-Mail mit einem Magic Link. Öffne den Link, um den Login zu bestätigen. Erst danach kannst du Free Trial starten oder kaufen.</p>
             </div>
 
             <div class="api-action-row license-action-row">
@@ -434,10 +446,10 @@
                 <button type="button" id="sendMagicLinkBtn">Magic Link senden</button>
                 <button type="button" id="logoutBtn">Logout</button>
                 <button type="button" id="refreshAccessBtn">Status aktualisieren</button>
-                <button type="button" id="startTrialBtn">3 Tage testen</button>
+                <button type="button" id="startTrialBtn">3 Tage testen / 5 KI-Anfragen kostenlos</button>
                 <button type="button" id="checkoutBtn">Jahreslizenz kaufen</button>
               </div>
-              <div class="key-feedback" id="accessFeedback" role="status" aria-live="polite">Noch nicht mit BuiltSmart verbunden.</div>
+              <div class="key-feedback" id="accessFeedback" role="status" aria-live="polite">Noch nicht mit BuiltSmart AI verbunden.</div>
             </div>
 
             <div class="field api-field license-code-field">
@@ -451,6 +463,7 @@
 
             <div class="privacy-note">
               <strong>Getrennte Datenbereiche</strong>
+              <p>Der 3-Tage Free Trial enthält 5 kostenlose BuiltSmart AI KI-Anfragen. Nach dem Free Trial benötigst du eine aktive App-Lizenz; KI-Anfragen laufen danach entweder über deinen eigenen Anthropic API-Key oder über gekauftes BuiltSmart AI Guthaben.</p>
               <p>Lokale App-Inhalte, Verlauf und Profile bleiben in diesem Browser. Lizenzdaten, Login-Session und KI-Guthaben werden getrennt über BuiltSmart/Supabase verwaltet. Eigene API-Keys werden nur lokal gespeichert und nicht exportiert.</p>
             </div>
           </div>
@@ -486,7 +499,7 @@
       <div class="footer-brand">
         <img class="footer-icon" src="assets/smart-summary-icon.png" alt="" aria-hidden="true">
         <div>
-          <strong>SMART Summary Assistant</strong>
+          <strong>SMART SummaryAssistant</strong>
           <p>Komplexe Dokumente. Klare Entscheidungen.</p>
         </div>
       </div>
@@ -543,10 +556,10 @@
 
           <section class="manual-section" id="help-access" data-help-section>
             <h3>Einrichtung & Zugang</h3>
-            <p>Die App nutzt das zentrale BuiltSmart Modell: persönlicher Login per E-Mail/Magic Link, 3 Tage Trial mit 5 KI-Testanfragen, Jahreslizenz nach dem Trial und getrennte KI-Nutzung über BuiltSmart AI Guthaben oder optional eigenen API-Key.</p>
+            <p>Die App nutzt das zentrale BuiltSmart Modell: persönlicher Login per E-Mail/Magic Link, 3 Tage Free Trial mit 5 kostenlosen KI-Anfragen, Jahreslizenz nach dem Free Trial und getrennte KI-Nutzung über BuiltSmart AI Guthaben oder optional eigenen API-Key.</p>
             <div class="manual-callout">
               <p><strong>Lizenz, BuiltSmart AI Guthaben und eigener API-Key erfüllen unterschiedliche Aufgaben:</strong></p>
-              <p>Der Login ordnet Trial, Lizenz und KI-Guthaben deinem persönlichen Nutzerzugriff zu. Der Lizenzschlüssel oder die Jahreslizenz aktiviert die Nutzung dieser App.</p>
+              <p>Der Login ordnet Free Trial, Lizenz und KI-Guthaben deinem persönlichen Nutzerzugriff zu. Der Lizenzschlüssel oder die Jahreslizenz aktiviert die Nutzung dieser App.</p>
               <p>KI-Anfragen können über BuiltSmart AI Guthaben laufen. Alternativ kannst du bewusst einen eigenen Anthropic API-Key lokal im Browser hinterlegen. Dieser eigene API-Key ersetzt nicht die App-Lizenz, sondern nur den KI-Ausführungsweg.</p>
             </div>
             <h4>Login per Magic Link</h4>
@@ -556,11 +569,11 @@
               <li>Trage deine E-Mail-Adresse ein und klicke auf <strong>Magic Link senden</strong>.</li>
               <li>Öffne die E-Mail und bestätige den Login. Danach wird dein persönlicher Nutzerzugriff in der App erkannt.</li>
             </ol>
-            <h4>Trial starten</h4>
+            <h4>Free Trial starten</h4>
             <ol class="manual-steps compact">
               <li>Logge dich zuerst per Magic Link ein.</li>
-              <li>Klicke auf <strong>3 Tage testen</strong>, sofern der Trial verfügbar ist.</li>
-              <li>Der Trial enthält 5 BuiltSmart AI Testanfragen.</li>
+              <li>Klicke auf <strong>3 Tage testen / 5 KI-Anfragen kostenlos</strong>, sofern der Free Trial verfügbar ist.</li>
+              <li>Der Free Trial enthält 5 kostenlose BuiltSmart AI KI-Anfragen.</li>
               <li>Nach Ablauf ist eine Jahreslizenz erforderlich.</li>
             </ol>
             <h4>Lizenzschlüssel aktivieren</h4>
@@ -573,6 +586,7 @@
             </ol>
             <h4>Jahreslizenz kaufen</h4>
             <p>Nach Login kannst du über <strong>Jahreslizenz kaufen</strong> den zentralen Checkout öffnen. Die Jahreslizenz gilt 12 Monate und verlängert sich automatisch. Mehrere Lizenzen derselben App sind möglich; pro Lizenz ist ein persönlicher Nutzerzugriff vorgesehen.</p>
+            <p>Wichtig: Die App-Lizenz aktiviert die Software. Für KI-Anfragen nutzt du danach entweder einen eigenen Anthropic API-Key oder kaufst BuiltSmart AI Guthaben.</p>
             <h4>BuiltSmart AI Guthaben kaufen</h4>
             <p>Wenn du keinen eigenen Anthropic API-Key verwenden möchtest, nutzt du <strong>Option 1 · BuiltSmart AI Guthaben</strong>. Nach Login kannst du über <strong>Guthaben kaufen</strong> den zentralen Checkout für KI-Guthaben öffnen, sobald der passende Guthaben-Plan im zentralen BuiltSmart Backend bereitsteht. Das Guthaben wird deinem persönlichen Nutzerzugriff zugeordnet.</p>
             <h4>Optional eigenen API-Key erstellen</h4>
@@ -587,7 +601,7 @@
             </ol>
             <p><strong>Wichtig:</strong> Der API-Key wird häufig nur einmal vollständig angezeigt. Speichere ihn sicher und teile ihn nicht mit anderen Personen.</p>
             <h4>Warum KI-Guthaben oder API-Key erforderlich ist</h4>
-            <p>Die App nutzt KI-Funktionen für Zusammenfassungen. Dafür ist entweder BuiltSmart AI Guthaben erforderlich oder ein eigener API-Key, den du lokal im Browser hinterlegst. Vor jeder KI-Aktion wird der voraussichtliche Verbrauch angezeigt und muss bestätigt werden.</p>
+            <p>Die App nutzt KI-Funktionen für Zusammenfassungen. Im 3-Tage Free Trial sind 5 BuiltSmart AI KI-Anfragen kostenlos enthalten. Danach ist für KI-Anfragen entweder BuiltSmart AI Guthaben erforderlich oder ein eigener API-Key, den du lokal im Browser hinterlegst. Vor jeder KI-Aktion wird der voraussichtliche Verbrauch angezeigt und muss bestätigt werden.</p>
             <h4>Warum auch bei bezahltem App-Abo KI-Nutzung getrennt ist</h4>
             <p>App-Lizenz beziehungsweise App-Abo und KI-Nutzung sind getrennt. Die App-Lizenz bezahlt die Nutzung der Software. Die KI-Nutzung läuft separat über BuiltSmart AI Guthaben oder über dein eigenes Anthropic-Konto, wenn du den eigenen API-Key aktivierst.</p>
             <h4>Warum Anthropic verwendet wird</h4>
@@ -598,7 +612,8 @@
             <h3>Schnellstart</h3>
             <ol class="manual-steps">
               <li><strong>Einloggen:</strong> Öffne Einrichtung & Zugang, sende den Magic Link und bestätige den Login per E-Mail.</li>
-              <li><strong>Trial oder Lizenz aktivieren:</strong> Starte den 3-Tage-Trial, löse einen Lizenzschlüssel ein oder kaufe eine Jahreslizenz.</li>
+              <li><strong>Free Trial starten oder Lizenz kaufen:</strong> Nach bestätigtem Magic-Link-Login kannst du den 3-Tage Free Trial mit 5 kostenlosen BuiltSmart AI KI-Anfragen starten, einen Lizenzschlüssel einlösen oder eine Jahreslizenz kaufen.</li>
+              <li><strong>KI-Nutzung klären:</strong> Nach dem Free Trial nutzt du für KI-Anfragen entweder deinen eigenen Anthropic API-Key oder gekauftes BuiltSmart AI Guthaben.</li>
               <li><strong>KI-Modus wählen:</strong> Nutze BuiltSmart AI Guthaben, kaufe bei Bedarf Guthaben nach oder aktiviere optional einen eigenen API-Key.</li>
               <li><strong>Erste Eingaben machen:</strong> Füge Text in das Quellenfeld ein oder importiere eine Datei per Drag & Drop oder Datei auswählen.</li>
               <li><strong>Zusammenfassung einstellen:</strong> Wähle Profil, Vorlage, Zielgruppe, Fokus, Länge und Ausgabeformat.</li>
@@ -615,7 +630,7 @@
               <div><dt>Ergebnis</dt><dd>Hier erscheint die KI-Zusammenfassung. Die Icons im Ergebnisfeld kopieren oder löschen nur das Ergebnis.</dd></div>
               <div><dt>Ansichten</dt><dd>Mit Quelle, Ergebnis und Geteilt wechselst du zwischen Eingabe, Ausgabe und paralleler Arbeitsansicht.</dd></div>
               <div><dt>Lokaler Verlauf</dt><dd>Speichert maximal 20 Zusammenfassungen in diesem Browser und kann jederzeit geleert werden.</dd></div>
-              <div><dt>Zugriff, Lizenz & Datenschutz</dt><dd>Enthält Magic-Link-Login, Trial, Jahreslizenz, Lizenzschlüssel, KI-Guthaben, eigenen API-Key und lokale Datensicherung.</dd></div>
+              <div><dt>Zugriff, Lizenz & Datenschutz</dt><dd>Enthält Magic-Link-Login, Free Trial, Jahreslizenz, Lizenzschlüssel, KI-Guthaben, eigenen API-Key und lokale Datensicherung.</dd></div>
             </dl>
           </section>
 
@@ -634,7 +649,7 @@
           <section class="manual-section" id="help-workflow" data-help-section>
             <h3>Typischer Workflow</h3>
             <ol class="manual-steps">
-              <li><strong>KI-Zugang einrichten:</strong> Per Magic Link einloggen, Trial oder Lizenz aktivieren und KI-Modus wählen.</li>
+              <li><strong>KI-Zugang einrichten:</strong> E-Mail eingeben, Magic Link in der E-Mail bestätigen, Free Trial starten oder Lizenz kaufen und KI-Modus wählen.</li>
               <li><strong>Quelle erfassen:</strong> Dokument importieren oder Text einfügen und kurz auf Lesbarkeit prüfen.</li>
               <li><strong>Zusammenfassung steuern:</strong> Profil oder manuelle Parameter passend zum Zweck wählen.</li>
               <li><strong>Ergebnis nutzen:</strong> Zusammenfassung prüfen, bei Bedarf Parameter nachschärfen und exportieren.</li>
@@ -675,7 +690,7 @@
             <h3>Fehler & Lösungen</h3>
             <ul class="manual-list">
               <li><strong>Nicht eingeloggt:</strong> Sende einen Magic Link und bestätige den Login per E-Mail.</li>
-              <li><strong>Trial abgelaufen:</strong> Aktiviere einen Lizenzschlüssel oder kaufe eine Jahreslizenz.</li>
+              <li><strong>Free Trial abgelaufen:</strong> Aktiviere einen Lizenzschlüssel oder kaufe eine Jahreslizenz.</li>
               <li><strong>Kein KI-Guthaben:</strong> Kaufe beziehungsweise lade BuiltSmart AI Guthaben nach oder nutze bewusst einen eigenen API-Key.</li>
               <li><strong>Zentrale Konfiguration fehlt:</strong> Supabase URL, Supabase Anon Key und Function URLs müssen app-spezifisch hinterlegt sein.</li>
               <li><strong>Keine Verbindung mit eigenem API-Key:</strong> Prüfe, ob der API-Key vollständig gespeichert ist, das Anthropic-Konto API-Nutzung erlaubt, Guthaben oder Zahlungsart aktiv sind und die Internetverbindung funktioniert.</li>
